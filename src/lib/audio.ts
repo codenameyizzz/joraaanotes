@@ -1,14 +1,18 @@
-// Pure Web Audio API Sound Effects (Zero external assets, zero CORS, ultra-low latency)
+// Pure Web Audio API Sound Effects + Clair de Lune Classical Music Engine
 
 class SoundSystem {
   private ctx: AudioContext | null = null;
   private ambientNode: AudioNode | null = null;
   private isAmbientPlaying: boolean = false;
+  private clairDeLuneAudio: HTMLAudioElement | null = null;
+  private isMusicPlaying: boolean = false;
 
   private getContext(): AudioContext | null {
     if (typeof window === 'undefined') return null;
     if (!this.ctx) {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (AudioCtx) {
         this.ctx = new AudioCtx();
       }
@@ -39,7 +43,7 @@ class SoundSystem {
       osc.start();
       osc.stop(ctx.currentTime + 0.04);
     } catch {
-      // Ignore if user hasn't interacted yet
+      // Ignore
     }
   }
 
@@ -158,63 +162,99 @@ class SoundSystem {
     } catch {}
   }
 
-  // Ambient Rain Sound Generator
-  toggleAmbientSound(mode: 'lofi-rain' | 'soft-piano' | 'gentle-chimes' | 'none'): boolean {
-    const ctx = this.getContext();
-    if (!ctx) return false;
+  // Clair de Lune by Claude Debussy (30-second seamless loop)
+  playClairDeLune(): boolean {
+    if (typeof window === 'undefined') return false;
 
-    if (this.isAmbientPlaying || mode === 'none') {
-      if (this.ambientNode) {
-        try {
-          (this.ambientNode as AudioBufferSourceNode).stop();
-          this.ambientNode.disconnect();
-        } catch {}
-        this.ambientNode = null;
-      }
-      this.isAmbientPlaying = false;
-      return false;
+    if (!this.clairDeLuneAudio) {
+      const audio = new Audio();
+      audio.preload = 'auto';
+
+      // Prefer .mp3 if user provided it, fallback to .ogg
+      audio.src = '/audio/clair-de-lune.mp3';
+
+      audio.onerror = () => {
+        // Fallback to .ogg if .mp3 not found
+        if (audio.src.endsWith('.mp3')) {
+          audio.src = '/audio/clair-de-lune.ogg';
+          audio.load();
+          audio.play().catch(() => {});
+        }
+      };
+
+      audio.volume = 0.45;
+
+      // Seamless 30-second loop with smooth volume cross-fade
+      audio.addEventListener('timeupdate', () => {
+        // Soft fade out in the last 2.5 seconds (27.5s - 30s)
+        if (audio.currentTime >= 27.5 && audio.currentTime < 30.0) {
+          const progress = (30.0 - audio.currentTime) / 2.5;
+          audio.volume = Math.max(0.03, 0.45 * progress);
+        }
+
+        // Loop back to 0.0 at 30 seconds
+        if (audio.currentTime >= 30.0) {
+          audio.currentTime = 0;
+          audio.volume = 0.45;
+          audio.play().catch(() => {});
+        }
+      });
+
+      this.clairDeLuneAudio = audio;
     }
 
     try {
-      // Generate soothing filtered rain / soft noise
-      const bufferSize = ctx.sampleRate * 2;
-      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      let lastOut = 0.0;
-      // Pink-ish / brownian noise generator for calming rain
-      for (let i = 0; i < bufferSize; i++) {
-        const white = Math.random() * 2 - 1;
-        data[i] = (lastOut + 0.02 * white) / 1.02;
-        lastOut = data[i];
-        data[i] *= 3.5;
+      this.clairDeLuneAudio.currentTime = 0;
+      this.clairDeLuneAudio.volume = 0.45;
+      const playPromise = this.clairDeLuneAudio.play();
+      if (playPromise) {
+        playPromise
+          .then(() => {
+            this.isMusicPlaying = true;
+          })
+          .catch(() => {
+            this.isMusicPlaying = false;
+          });
       }
-
-      const noise = ctx.createBufferSource();
-      noise.buffer = buffer;
-      noise.loop = true;
-
-      const filter = ctx.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(800, ctx.currentTime);
-
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.04, ctx.currentTime);
-
-      noise.connect(filter);
-      filter.connect(gain);
-      gain.connect(ctx.destination);
-
-      noise.start();
-      this.ambientNode = noise;
-      this.isAmbientPlaying = true;
+      this.isMusicPlaying = true;
       return true;
     } catch {
+      this.isMusicPlaying = false;
       return false;
     }
   }
 
+  stopClairDeLune() {
+    if (this.clairDeLuneAudio) {
+      try {
+        this.clairDeLuneAudio.pause();
+        this.clairDeLuneAudio.currentTime = 0;
+      } catch {}
+      this.isMusicPlaying = false;
+    }
+  }
+
+  toggleClairDeLune(): boolean {
+    if (this.isMusicPlaying) {
+      this.stopClairDeLune();
+      return false;
+    } else {
+      return this.playClairDeLune();
+    }
+  }
+
+  getMusicStatus(): boolean {
+    return this.isMusicPlaying;
+  }
+
+  // Ambient Rain / Noise Generator (Fallback)
+  toggleAmbientSound(mode: 'lofi-rain' | 'soft-piano' | 'gentle-chimes' | 'none'): boolean {
+    // If Clair de Lune is requested or default, prioritize Clair de Lune
+    return this.toggleClairDeLune();
+  }
+
   getAmbientStatus(): boolean {
-    return this.isAmbientPlaying;
+    return this.isMusicPlaying || this.isAmbientPlaying;
   }
 }
 

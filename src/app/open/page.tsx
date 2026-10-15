@@ -3,6 +3,7 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import { CapsuleData } from '@/lib/types';
 import { decodeCapsule } from '@/lib/storage';
@@ -103,15 +104,33 @@ function OpenCapsuleContent() {
 
   return (
     <>
-      {!isOpened ? (
-        <EnvelopeView capsule={capsule} onOpen={() => setIsOpened(true)} />
-      ) : (
-        <LetterReader
-          capsule={capsule}
-          onBackToEnvelope={() => setIsOpened(false)}
-          onShare={() => setIsShareModalOpen(true)}
-        />
-      )}
+      <AnimatePresence mode="wait">
+        {!isOpened ? (
+          <motion.div
+            key="envelope-stage"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <EnvelopeView capsule={capsule} onOpen={() => setIsOpened(true)} />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="letter-stage"
+            initial={{ opacity: 0, y: 30, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.98 }}
+            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <LetterReader
+              capsule={capsule}
+              onBackToEnvelope={() => setIsOpened(false)}
+              onShare={() => setIsShareModalOpen(true)}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <ShareModal
         isOpen={isShareModalOpen}

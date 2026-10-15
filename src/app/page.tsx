@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles,
   Camera,
@@ -213,8 +214,8 @@ export default function HomePage() {
 
   const currentThemeConfig = THEMES[selectedTheme] || THEMES['warm-paper'];
 
-  // If in Preview Mode, render Envelope or Letter
-  if (previewMode === 'envelope' && activeCapsule) {
+  // If in Preview Mode, render Envelope or Letter with smooth AnimatePresence transition
+  if (previewMode !== 'none' && activeCapsule) {
     return (
       <div className="relative">
         <div className="fixed top-4 left-4 z-50">
@@ -224,35 +225,41 @@ export default function HomePage() {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/80 border border-[#DACFBF] text-xs font-mono text-[#5C5042] hover:bg-white shadow-sm"
           >
             <X size={13} />
-            <span>Keluar Preview</span>
+            <span>{previewMode === 'envelope' ? 'Keluar Preview' : 'Kembali ke Editor'}</span>
           </button>
         </div>
-        <EnvelopeView
-          capsule={activeCapsule}
-          onOpen={() => setPreviewMode('letter')}
-        />
-      </div>
-    );
-  }
 
-  if (previewMode === 'letter' && activeCapsule) {
-    return (
-      <div className="relative">
-        <div className="fixed top-4 left-4 z-50">
-          <button
-            type="button"
-            onClick={() => setPreviewMode('none')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/80 border border-[#DACFBF] text-xs font-mono text-[#5C5042] hover:bg-white shadow-sm"
-          >
-            <X size={13} />
-            <span>Kembali ke Editor</span>
-          </button>
-        </div>
-        <LetterReader
-          capsule={activeCapsule}
-          onBackToEnvelope={() => setPreviewMode('envelope')}
-          onShare={handlePublish}
-        />
+        <AnimatePresence mode="wait">
+          {previewMode === 'envelope' ? (
+            <motion.div
+              key="preview-envelope"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <EnvelopeView
+                capsule={activeCapsule}
+                onOpen={() => setPreviewMode('letter')}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="preview-letter"
+              initial={{ opacity: 0, y: 30, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.98 }}
+              transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <LetterReader
+                capsule={activeCapsule}
+                onBackToEnvelope={() => setPreviewMode('envelope')}
+                onShare={handlePublish}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <ShareModal
           isOpen={isShareModalOpen}
           onClose={() => setIsShareModalOpen(false)}
@@ -562,7 +569,7 @@ export default function HomePage() {
             </div>
 
             {/* Atmosphere Mood Sound */}
-            <div>
+            {/* <div>
               <label className="block text-[11px] font-mono uppercase tracking-wider text-[#918373] mb-2">
                 Musik Latar Suasana (Ambient Sound Engine)
               </label>
@@ -588,7 +595,7 @@ export default function HomePage() {
                   </button>
                 ))}
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Action Footer: Segel & Terbangkan */}

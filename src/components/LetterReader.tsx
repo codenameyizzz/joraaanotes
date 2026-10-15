@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Share2,
@@ -42,8 +42,19 @@ export default function LetterReader({
     Array<{ id: number; icon: string; x: number }>
   >([]);
 
+  useEffect(() => {
+    // Start Clair de Lune softly when letter opens
+    if (capsule.musicMood !== 'none') {
+      const playing = sounds.playClairDeLune();
+      setIsAmbientOn(playing);
+    }
+    return () => {
+      sounds.stopClairDeLune();
+    };
+  }, [capsule.musicMood]);
+
   const toggleAmbient = () => {
-    const newState = sounds.toggleAmbientSound(capsule.musicMood || 'lofi-rain');
+    const newState = sounds.toggleClairDeLune();
     setIsAmbientOn(newState);
   };
 
@@ -87,15 +98,23 @@ export default function LetterReader({
             <button
               type="button"
               onClick={toggleAmbient}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-mono transition-all shadow-xs ${
-                isAmbientOn
-                  ? 'bg-[#2B2520] text-white border-[#2B2520]'
-                  : 'bg-white/70 text-[#6E6356] border-[#E5DACB] hover:bg-white'
-              }`}
-              title="Suasana Hujan & Ambient Lofi"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-mono transition-all shadow-xs ${isAmbientOn
+                ? 'bg-[#2B2520] text-white border-[#2B2520]'
+                : 'bg-white/70 text-[#6E6356] border-[#E5DACB] hover:bg-white'
+                }`}
+              title="Clair de Lune — Claude Debussy (30 Detik)"
             >
-              {isAmbientOn ? <Volume2 size={13} /> : <VolumeX size={13} />}
-              <span>{isAmbientOn ? 'Suasana Hidup' : 'Nyalakan Suasana'}</span>
+              {isAmbientOn ? (
+                <>
+                  <Volume2 size={13} className="text-[#EADFA8] animate-pulse" />
+                  <span>Clair de Lune</span>
+                </>
+              ) : (
+                <>
+                  <VolumeX size={13} />
+                  <span>Nyalakan Musik</span>
+                </>
+              )}
             </button>
           )}
 
@@ -142,7 +161,7 @@ export default function LetterReader({
             {capsule.locationWeather && (
               <div className="text-left sm:text-right">
                 <span className="inline-block px-2.5 py-0.5 rounded-full bg-[#F4EFE6] text-[10px] font-mono text-[#8C7F72]">
-                  📍 {capsule.locationWeather}
+                  {capsule.locationWeather}
                 </span>
               </div>
             )}
@@ -209,7 +228,7 @@ export default function LetterReader({
         <section className="mt-10 mb-6 bg-white/80 backdrop-blur-md rounded-2xl border border-[#E8DFC9] p-4 shadow-sm relative">
           <div className="text-center mb-3">
             <h3 className="text-xs font-mono uppercase tracking-wider text-[#7D7061]">
-              Kirimkan Sentuhan Rasa untuk Pengirim
+              Send Reactions
             </h3>
           </div>
 
@@ -221,7 +240,7 @@ export default function LetterReader({
               className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-[#FAF6EE] hover:bg-[#F2EBDC] border border-[#E8DFC9] transition-all text-xs font-mono text-[#382F26] active:scale-95"
             >
               <Heart size={14} className="text-[#C2765A]" />
-              <span>Pelukan</span>
+              {/* <span>Pelukan</span> */}
               <span className="font-semibold text-[11px] text-[#8A7969] ml-auto">
                 {reactions.hugs}
               </span>
@@ -234,7 +253,7 @@ export default function LetterReader({
               className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-[#FAF6EE] hover:bg-[#F2EBDC] border border-[#E8DFC9] transition-all text-xs font-mono text-[#382F26] active:scale-95"
             >
               <Smile size={14} className="text-[#D4AF37]" />
-              <span>Senyuman</span>
+              {/* <span>Senyuman</span> */}
               <span className="font-semibold text-[11px] text-[#8A7969] ml-auto">
                 {reactions.smiles}
               </span>
@@ -247,7 +266,7 @@ export default function LetterReader({
               className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-[#FAF6EE] hover:bg-[#F2EBDC] border border-[#E8DFC9] transition-all text-xs font-mono text-[#382F26] active:scale-95"
             >
               <Flower2 size={14} className="text-[#B85D6B]" />
-              <span>Kelopak</span>
+              {/* <span>Kelopak</span> */}
               <span className="font-semibold text-[11px] text-[#8A7969] ml-auto">
                 {reactions.flowers}
               </span>
@@ -260,7 +279,7 @@ export default function LetterReader({
               className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-[#FAF6EE] hover:bg-[#F2EBDC] border border-[#E8DFC9] transition-all text-xs font-mono text-[#382F26] active:scale-95"
             >
               <Coffee size={14} className="text-[#7D5D3B]" />
-              <span>Secangkir</span>
+              {/* <span>Secangkir</span> */}
               <span className="font-semibold text-[11px] text-[#8A7969] ml-auto">
                 {reactions.coffee}
               </span>
@@ -291,10 +310,10 @@ export default function LetterReader({
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#26201B] text-[#FAF8F5] text-xs font-mono uppercase tracking-wider shadow-md hover:bg-[#3D352E] hover:scale-105 active:scale-95 transition-all"
           >
             <PenLine size={13} />
-            <span>Tulis Surat Balasan / Buat Kapsulmu</span>
+            <span>Tulis Surat Balasan</span>
           </Link>
           <p className="text-[11px] text-[#918578] font-mono mt-2">
-            Gratis • Tanpa Perlu Daftar Akun • Tersimpan Abadi
+            Notes: ini masih on dev, terimakasih sudah mampir! (yizzzrl)
           </p>
         </div>
       </motion.main>
