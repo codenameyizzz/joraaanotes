@@ -223,20 +223,35 @@ export default function ShareModal({
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="mt-2.5 pt-2.5 border-t border-[#E8DEC8] text-[11px] font-sans text-[#6B5F52] space-y-1.5"
+                className="mt-2.5 pt-2.5 border-t border-[#E8DEC8] text-[11px] font-sans text-[#6B5F52] space-y-2"
               >
-                <p className="font-mono text-[10px] text-[#964332] font-semibold">
-                  VERCEL BLOB (100% GRATIS DI VERCEL):
-                </p>
-                <p className="text-[10px] text-[#5A4E42] font-sans leading-relaxed">
-                  Surat & foto Anda tersimpan aman di Vercel Blob store. Tautan dibagikan secara ringkas dan rapi dalam format domain resmi:
-                </p>
-                <code className="block bg-white/90 p-1.5 rounded border border-[#E0D5C3] text-[#964332] font-mono text-[10px]">
-                  https://joraaanotes.vercel.app/open?id={capsule.id}
-                </code>
-                <p className="text-[10px] text-[#7A6F62] italic font-sans">
-                  Sangat ringan, tidak akan terpotong di WhatsApp, dan dapat dibuka siapa saja tanpa perlu login.
-                </p>
+                {hasPersistentStorage ? (
+                  <>
+                    <p className="font-mono text-[10px] text-[#4F7744] font-semibold">
+                      ✓ VERCEL BLOB SUDAH AKTIF (100% GRATIS)
+                    </p>
+                    <p className="text-[10px] text-[#5A4E42] font-sans leading-relaxed">
+                      Surat & foto tersimpan aman di Vercel Blob store. Tautan dibagikan secara ringkas dan rapi:
+                    </p>
+                    <code className="block bg-white/90 p-1.5 rounded border border-[#E0D5C3] text-[#964332] font-mono text-[10px]">
+                      https://joraaanotes.vercel.app/open?id={capsule.id}
+                    </code>
+                  </>
+                ) : (
+                  <>
+                    <p className="font-mono text-[10px] text-[#BA6E52] font-semibold">
+                      CARA MENGAKTIFKAN LINK PENDEK DOMAIN RESMI:
+                    </p>
+                    <p className="text-[10px] text-[#5A4E42] font-sans leading-relaxed">
+                      Blob store <span className="font-mono font-bold">joraaa</span> sudah Anda buat! Agar link selalu singkat (~43 karakter) dan foto tersimpan di cloud:
+                    </p>
+                    <ol className="list-decimal pl-4 text-[10px] space-y-1 text-[#5A4E42]">
+                      <li>Buka Vercel -&gt; Project <strong>joraaanotes</strong> -&gt; tab <strong>Storage</strong>.</li>
+                      <li>Klik <strong>Connect Store</strong> -&gt; pilih store <strong>joraaa</strong>.</li>
+                      <li>Buka tab <strong>Deployments</strong> -&gt; klik titik tiga (...) teratas -&gt; <strong>Redeploy</strong>.</li>
+                    </ol>
+                  </>
+                )}
               </motion.div>
             )}
           </div>

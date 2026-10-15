@@ -14,9 +14,14 @@ export function getBlobToken(): string | undefined {
     return process.env.BLOB_READ_WRITE_TOKEN.trim();
   }
 
-  // Look for any environment variable ending in _READ_WRITE_TOKEN
+  // Look for any environment variable containing BLOB and ending in TOKEN or _READ_WRITE_TOKEN
   for (const [key, value] of Object.entries(process.env)) {
-    if (key.endsWith('_READ_WRITE_TOKEN') && typeof value === 'string' && value.trim() !== '') {
+    const isBlobToken =
+      (key.includes('BLOB') && key.includes('TOKEN')) ||
+      key.endsWith('_READ_WRITE_TOKEN') ||
+      key === 'STORAGE_TOKEN';
+
+    if (isBlobToken && typeof value === 'string' && value.trim() !== '') {
       return value.trim();
     }
   }

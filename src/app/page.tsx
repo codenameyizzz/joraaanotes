@@ -208,6 +208,25 @@ export default function HomePage() {
       finalShareUrl = `${origin}/open?id=${capsule.id}#data=${encoded}`;
     }
 
+    // If cloud storage is not yet active and the hash is short enough, attempt URL shortening for WhatsApp
+    if (!storageActive && finalShareUrl.length < 3500) {
+      try {
+        const shortenRes = await fetch('/api/shorten', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: finalShareUrl }),
+        });
+        if (shortenRes.ok) {
+          const shortenData = await shortenRes.json();
+          if (shortenData.shortUrl && shortenData.shortUrl.startsWith('http')) {
+            finalShareUrl = shortenData.shortUrl;
+          }
+        }
+      } catch (shortenErr) {
+        console.warn('Shorten API error:', shortenErr);
+      }
+    }
+
     setHasServerStorage(storageActive);
     setGeneratedShareUrl(finalShareUrl);
     setIsPublishing(false);
