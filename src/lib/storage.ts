@@ -49,8 +49,8 @@ export function getLocalVault(): CapsuleData[] {
   }
 }
 
-// Auto-compress image to WebP with target width to keep URLs fast and lightweight
-export async function compressImage(file: File, maxWidth = 1000, quality = 0.75): Promise<string> {
+// Auto-compress image to WebP with target width to keep URLs fast, lightweight, and WhatsApp-friendly
+export async function compressImage(file: File, maxWidth = 420, quality = 0.65): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);

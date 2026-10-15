@@ -19,6 +19,7 @@ import {
   MapPin,
   X,
   Volume2,
+  Loader2,
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { CapsuleData, PhotoItem, SealIconType, ThemeId, THEMES } from '@/lib/types';
@@ -50,6 +51,9 @@ export default function HomePage() {
   const [previewMode, setPreviewMode] = useState<'none' | 'envelope' | 'letter'>('none');
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [generatedShareUrl, setGeneratedShareUrl] = useState('');
+  const [fallbackHashUrl, setFallbackHashUrl] = useState('');
+  const [hasServerStorage, setHasServerStorage] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [activeCapsule, setActiveCapsule] = useState<CapsuleData | null>(null);
   const [savedVault, setSavedVault] = useState<CapsuleData[]>([]);
 
@@ -152,30 +156,68 @@ export default function HomePage() {
       return;
     }
 
+    setIsPublishing(true);
     sounds.playWaxSealPop();
 
     const capsule = buildCurrentCapsule();
     setActiveCapsule(capsule);
 
-    // 1. Encode into compressed URL Hash for 100% serverless, zero-setup Vercel sharing
-    const encoded = encodeCapsule(capsule);
-    const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    const shareUrl = `${origin}/open#data=${encoded}`;
-    setGeneratedShareUrl(shareUrl);
-
-    // 2. Save into local vault
+    // Save into local personal memory vault
     saveToLocalVault(capsule);
     setSavedVault(getLocalVault());
 
-    // 3. Post to API route (in background)
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const encoded = encodeCapsule(capsule);
+    const fullHashUrl = `${origin}/open#data=${encoded}`;
+    setFallbackHashUrl(fullHashUrl);
+
+    let finalShareUrl = fullHashUrl;
+    let storageActive = false;
+
     try {
-      fetch('/api/capsules', {
+      // 1. Post to API route (Upstash Redis / Vercel KV)
+      const res = await fetch('/api/capsules', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(capsule),
-      }).catch(() => {});
-    } catch {}
+      });
 
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          // If persistent database is active, use clean canonical short URL
+          if (data.storageType === 'redis' || data.hasPersistentStorage) {
+            finalShareUrl = `${origin}/open?id=${data.id}`;
+            storageActive = true;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('API save error:', err);
+    }
+
+    // 2. If no persistent database is active on Vercel, shorten the URL for WhatsApp
+    if (!storageActive) {
+      try {
+        const shortenRes = await fetch('/api/shorten', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: finalShareUrl }),
+        });
+        if (shortenRes.ok) {
+          const shortenData = await shortenRes.json();
+          if (shortenData.shortUrl && shortenData.shortUrl.startsWith('http')) {
+            finalShareUrl = shortenData.shortUrl;
+          }
+        }
+      } catch (shortenErr) {
+        console.warn('Shorten API error:', shortenErr);
+      }
+    }
+
+    setHasServerStorage(storageActive);
+    setGeneratedShareUrl(finalShareUrl);
+    setIsPublishing(false);
     setIsShareModalOpen(true);
   };
 
@@ -226,16 +268,15 @@ export default function HomePage() {
         <LetterReader
           capsule={activeCapsule}
           onBackToEnvelope={() => setPreviewMode('envelope')}
-          onShare={() => {
-            setGeneratedShareUrl(`${window.location.origin}/open#data=${encodeCapsule(activeCapsule)}`);
-            setIsShareModalOpen(true);
-          }}
+          onShare={handlePublish}
         />
         <ShareModal
           isOpen={isShareModalOpen}
           onClose={() => setIsShareModalOpen(false)}
           capsule={activeCapsule}
           shareUrl={generatedShareUrl}
+          fallbackUrl={fallbackHashUrl}
+          hasPersistentStorage={hasServerStorage}
         />
       </div>
     );
@@ -286,10 +327,10 @@ export default function HomePage() {
       <main className="max-w-3xl mx-auto py-10 px-4 sm:px-6">
         {/* Poetic Intro */}
         <section className="text-center mb-10">
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/70 border border-[#E5DACB] text-[11px] font-mono tracking-wider text-[#7A6D5E] mb-3 shadow-2xs">
+          {/* <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/70 border border-[#E5DACB] text-[11px] font-mono tracking-wider text-[#7A6D5E] mb-3 shadow-2xs">
             <Sparkles size={12} className="text-[#BA6E52]" />
             <span>KIRIM SEPUCUK KENANGAN DI DALAM AMPLOP DIGITAL</span>
-          </div>
+          </div> */}
           <h1 className="font-serif text-3xl sm:text-5xl text-[#26201B] tracking-tight font-normal leading-tight">
             Tulis Surat, Sematkan Potret, & Segel dengan Kasih.
           </h1>
@@ -484,11 +525,10 @@ export default function HomePage() {
                         sounds.playSoftClick();
                         setSelectedTheme(tId);
                       }}
-                      className={`flex items-center gap-2 p-2 rounded-xl border text-left transition-all ${
-                        isSelected
-                          ? 'border-[#26201B] bg-white ring-1 ring-[#26201B] shadow-xs'
-                          : 'border-[#E5DACB] bg-[#F7F2E8] hover:bg-white'
-                      }`}
+                      className={`flex items-center gap-2 p-2 rounded-xl border text-left transition-all ${isSelected
+                        ? 'border-[#26201B] bg-white ring-1 ring-[#26201B] shadow-xs'
+                        : 'border-[#E5DACB] bg-[#F7F2E8] hover:bg-white'
+                        }`}
                     >
                       <div
                         className="w-5 h-5 rounded-full border border-black/10 shrink-0"
@@ -526,11 +566,10 @@ export default function HomePage() {
                       sounds.playSoftClick();
                       setSelectedSeal(item.id);
                     }}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-mono transition-all ${
-                      selectedSeal === item.id
-                        ? 'bg-[#26201B] text-white border-[#26201B] shadow-xs'
-                        : 'bg-[#F7F2E8] text-[#594E42] border-[#E3D6C3] hover:bg-white'
-                    }`}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-mono transition-all ${selectedSeal === item.id
+                      ? 'bg-[#26201B] text-white border-[#26201B] shadow-xs'
+                      : 'bg-[#F7F2E8] text-[#594E42] border-[#E3D6C3] hover:bg-white'
+                      }`}
                   >
                     {item.icon}
                     <span>{item.label}</span>
@@ -557,11 +596,10 @@ export default function HomePage() {
                       sounds.playSoftClick();
                       setMusicMood(item.id as 'lofi-rain' | 'gentle-chimes' | 'none');
                     }}
-                    className={`px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${
-                      musicMood === item.id
-                        ? 'bg-[#8C9A7E] text-white border-[#8C9A7E]'
-                        : 'bg-[#F7F2E8] text-[#594E42] border-[#E3D6C3] hover:bg-white'
-                    }`}
+                    className={`px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${musicMood === item.id
+                      ? 'bg-[#8C9A7E] text-white border-[#8C9A7E]'
+                      : 'bg-[#F7F2E8] text-[#594E42] border-[#E3D6C3] hover:bg-white'
+                      }`}
                   >
                     {item.label}
                   </button>
@@ -602,10 +640,20 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={handlePublish}
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#964332] text-white text-xs font-mono uppercase tracking-wider shadow-lg hover:bg-[#803829] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                disabled={isPublishing}
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#964332] text-white text-xs font-mono uppercase tracking-wider shadow-lg hover:bg-[#803829] hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-80 disabled:cursor-wait"
               >
-                <Send size={13} />
-                <span>Segel & Bagikan</span>
+                {isPublishing ? (
+                  <>
+                    <Loader2 size={13} className="animate-spin" />
+                    <span>Menyegel...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send size={13} />
+                    <span>Segel & Bagikan</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -668,15 +716,14 @@ export default function HomePage() {
           onClose={() => setIsShareModalOpen(false)}
           capsule={activeCapsule}
           shareUrl={generatedShareUrl}
+          fallbackUrl={fallbackHashUrl}
+          hasPersistentStorage={hasServerStorage}
         />
       )}
 
       {/* Footer */}
       <footer className="mt-20 py-8 border-t border-[#E8DFC9] text-center text-xs font-mono text-[#8C7E70]">
-        <p>Joraaa Notes • Dibuat dengan cinta, kertas katun, dan segel lilin digital.</p>
-        <p className="text-[10px] text-[#A6998A] mt-1">
-          Dapat di-host 100% gratis di Vercel selamanya.
-        </p>
+        <p>2026 Joraaa Notes - Copyright Reserved. All rights reserved.</p>
       </footer>
     </div>
   );

@@ -65,14 +65,14 @@ export default function EnvelopeView({ capsule, onOpen }: EnvelopeViewProps) {
         className="text-center mb-8 max-w-md z-10"
       >
         <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/60 border border-[#E5DACB] text-[12px] font-mono tracking-wider text-[#7A6F63] mb-3 backdrop-blur-xs shadow-xs">
-          <Sparkles size={12} className="text-[#BA6E52]" />
-          <span>SEPUCUK SURAT & MEMOIR</span>
+          {/* <Sparkles size={12} className="text-[#BA6E52]" /> */}
+          <span>A letter for you</span>
         </div>
         <h1 className="font-serif text-3xl sm:text-4xl text-[#2B2520] tracking-tight">
           Ada sebuah pesan rahasia untukmu
         </h1>
         <p className="font-sans text-sm text-[#7D7266] mt-2">
-          Dikirim dengan tulus oleh <span className="font-semibold text-[#2B2520]">{capsule.author || 'Seseorang'}</span>
+          Ditulis dengan tulus oleh <span className="font-semibold text-[#2B2520]">{capsule.author || 'Seseorang'}</span>
         </p>
       </motion.div>
 
@@ -205,7 +205,7 @@ export default function EnvelopeView({ capsule, onOpen }: EnvelopeViewProps) {
           className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#2B2520] text-[#FAF8F5] text-xs font-mono uppercase tracking-wider shadow-lg hover:bg-[#3D352E] hover:scale-105 active:scale-95 transition-all cursor-pointer"
         >
           <MailOpen size={14} />
-          <span>{isOpening ? 'Membuka Segel...' : 'Sentuh Segel Untuk Membuka'}</span>
+          <span>{isOpening ? 'Membuka Segel...' : 'Klik untuk buka'}</span>
         </button>
         <p className="text-[11px] font-sans text-[#8C8276] mt-2 italic">
           Buka perlahan, biarkan setiap kata menyapamu
