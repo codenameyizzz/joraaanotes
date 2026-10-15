@@ -171,11 +171,12 @@ export default function HomePage() {
     const fullHashUrl = `${origin}/open#data=${encoded}`;
     setFallbackHashUrl(fullHashUrl);
 
-    let finalShareUrl = fullHashUrl;
+    // Primary clean short link (only ~43 characters, perfect for WhatsApp)
+    let finalShareUrl = `${origin}/open?id=${capsule.id}`;
     let storageActive = false;
 
     try {
-      // 1. Post to API route (Upstash Redis / Vercel KV)
+      // 1. Post to API route (Vercel Blob / Upstash Redis / Memory)
       const res = await fetch('/api/capsules', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -185,34 +186,16 @@ export default function HomePage() {
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
-          // If persistent database is active, use clean canonical short URL
-          if (data.storageType === 'redis' || data.hasPersistentStorage) {
-            finalShareUrl = `${origin}/open?id=${data.id}`;
-            storageActive = true;
-          }
+          finalShareUrl = `${origin}/open?id=${data.id}`;
+          storageActive = Boolean(
+            data.hasPersistentStorage ||
+            data.storageType === 'blob' ||
+            data.storageType === 'redis'
+          );
         }
       }
     } catch (err) {
       console.warn('API save error:', err);
-    }
-
-    // 2. If no persistent database is active on Vercel, shorten the URL for WhatsApp
-    if (!storageActive) {
-      try {
-        const shortenRes = await fetch('/api/shorten', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: finalShareUrl }),
-        });
-        if (shortenRes.ok) {
-          const shortenData = await shortenRes.json();
-          if (shortenData.shortUrl && shortenData.shortUrl.startsWith('http')) {
-            finalShareUrl = shortenData.shortUrl;
-          }
-        }
-      } catch (shortenErr) {
-        console.warn('Shorten API error:', shortenErr);
-      }
     }
 
     setHasServerStorage(storageActive);

@@ -102,11 +102,11 @@ export default function ShareModal({
               </span>
               {hasPersistentStorage ? (
                 <span className="text-[10px] font-mono text-[#4F7744] bg-[#E8F0E4] px-2 py-0.5 rounded-full font-medium">
-                  ✓ Database Vercel KV Terhubung
+                  ✓ Vercel Blob Terhubung (100% Gratis)
                 </span>
               ) : (
-                <span className="text-[10px] font-mono text-[#8C7A4A] bg-[#F7F2E2] px-2 py-0.5 rounded-full font-medium">
-                  ⚡ Link Pendek Aktif
+                <span className="text-[10px] font-mono text-[#4F7744] bg-[#E8F0E4] px-2 py-0.5 rounded-full font-medium">
+                  ✓ Link Pendek WhatsApp Ready
                 </span>
               )}
             </div>
@@ -200,7 +200,7 @@ export default function ShareModal({
             </a>
           </div>
 
-          {/* Vercel KV Setup Guidance (Collapsible) */}
+          {/* Vercel Storage Status & Info */}
           <div className="border border-[#E5DACB] rounded-xl bg-[#F7F2E8]/60 p-3 text-left">
             <button
               type="button"
@@ -209,7 +209,11 @@ export default function ShareModal({
             >
               <span className="flex items-center gap-1.5 font-medium">
                 <Database size={12} className="text-[#964332]" />
-                <span>Mau link custom domain Anda sendiri?</span>
+                <span>
+                  {hasPersistentStorage
+                    ? 'Penyimpanan Vercel Blob Aktif'
+                    : 'Info Link Pendek & Vercel Blob'}
+                </span>
               </span>
               {showVercelGuide ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
             </button>
@@ -222,16 +226,16 @@ export default function ShareModal({
                 className="mt-2.5 pt-2.5 border-t border-[#E8DEC8] text-[11px] font-sans text-[#6B5F52] space-y-1.5"
               >
                 <p className="font-mono text-[10px] text-[#964332] font-semibold">
-                  100% GRATIS SELAMANYA DENGAN VERCEL KV:
+                  VERCEL BLOB (100% GRATIS DI VERCEL):
                 </p>
-                <ol className="list-decimal list-inside space-y-1 font-mono text-[10px] leading-relaxed text-[#5A4E42]">
-                  <li>Buka dashboard Vercel proyek Anda (<code className="bg-white/80 px-1 py-0.5 rounded">joraaanotes</code>).</li>
-                  <li>Klik tab <strong>Storage</strong> di menu atas.</li>
-                  <li>Pilih <strong>KV (Durable Redis)</strong> atau <strong>Upstash Redis</strong> (Free).</li>
-                  <li>Klik <strong>Create & Connect to Project</strong>.</li>
-                </ol>
-                <p className="text-[10px] text-[#7A6F62] italic mt-1 font-sans">
-                  Selesai! Vercel akan otomatis menyambungkan database gratis, dan tautan Anda akan selalu berbentuk pendek resmi seperti: <code className="text-[#964332] font-mono">joraaanotes.vercel.app/open?id=k8Xq2m</code>
+                <p className="text-[10px] text-[#5A4E42] font-sans leading-relaxed">
+                  Surat & foto Anda tersimpan aman di Vercel Blob store. Tautan dibagikan secara ringkas dan rapi dalam format domain resmi:
+                </p>
+                <code className="block bg-white/90 p-1.5 rounded border border-[#E0D5C3] text-[#964332] font-mono text-[10px]">
+                  https://joraaanotes.vercel.app/open?id={capsule.id}
+                </code>
+                <p className="text-[10px] text-[#7A6F62] italic font-sans">
+                  Sangat ringan, tidak akan terpotong di WhatsApp, dan dapat dibuka siapa saja tanpa perlu login.
                 </p>
               </motion.div>
             )}
