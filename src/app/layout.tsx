@@ -25,8 +25,27 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://joraaanotes.vercel.app"),
   title: "Joraaa Notes — Aesthetic Digital Keepsake & Letters",
   description: "Kirim sepucuk surat, potret polaroid, dan catatan estetik dalam amplop kenangan digital.",
+  icons: {
+    icon: [
+      { url: "/icon.jpeg", type: "image/jpeg" },
+    ],
+    shortcut: "/icon.jpeg",
+    apple: "/icon.jpeg",
+  },
+  openGraph: {
+    title: "Joraaa Notes — Aesthetic Digital Keepsake & Letters",
+    description: "Kirim sepucuk surat, potret polaroid, dan catatan estetik dalam amplop kenangan digital.",
+    images: [{ url: "/icon.jpeg", width: 800, height: 800, alt: "Joraaa Notes" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Joraaa Notes",
+    description: "Kirim sepucuk surat, potret polaroid, dan catatan estetik dalam amplop kenangan digital.",
+    images: ["/icon.jpeg"],
+  },
 };
 
 export default function RootLayout({
