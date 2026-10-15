@@ -5,8 +5,27 @@ import { CapsuleData } from './types';
 // In-memory fallback for local dev or single-instance runs
 const memoryStore = new Map<string, CapsuleData>();
 
+/**
+ * Find the Vercel Blob token.
+ * Vercel can name the env var BLOB_READ_WRITE_TOKEN or [STORENAME]_READ_WRITE_TOKEN (e.g. JORAAA_READ_WRITE_TOKEN).
+ */
+export function getBlobToken(): string | undefined {
+  if (process.env.BLOB_READ_WRITE_TOKEN && process.env.BLOB_READ_WRITE_TOKEN.trim() !== '') {
+    return process.env.BLOB_READ_WRITE_TOKEN.trim();
+  }
+
+  // Look for any environment variable ending in _READ_WRITE_TOKEN
+  for (const [key, value] of Object.entries(process.env)) {
+    if (key.endsWith('_READ_WRITE_TOKEN') && typeof value === 'string' && value.trim() !== '') {
+      return value.trim();
+    }
+  }
+
+  return undefined;
+}
+
 export function hasVercelBlob(): boolean {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+  return Boolean(getBlobToken());
 }
 
 export function hasPersistentStorage(): boolean {
@@ -45,11 +64,15 @@ export async function saveCapsuleToServer(capsule: CapsuleData): Promise<{
   url?: string;
 }> {
   // 1. Primary: Vercel Blob (Free 1GB built into Vercel Hobby plan!)
-  if (hasVercelBlob()) {
+  const blobToken = getBlobToken();
+  if (blobToken) {
     try {
       const blob = await put(`capsules/${capsule.id}.json`, JSON.stringify(capsule), {
         access: 'public',
         addRandomSuffix: false,
+        allowOverwrite: true,
+        contentType: 'application/json',
+        token: blobToken,
       });
 
       return {
@@ -95,11 +118,20 @@ export async function saveCapsuleToServer(capsule: CapsuleData): Promise<{
  */
 export async function getCapsuleFromServer(id: string): Promise<CapsuleData | null> {
   // 1. Check Vercel Blob
-  if (hasVercelBlob()) {
+  const blobToken = getBlobToken();
+  if (blobToken) {
     try {
-      const { blobs } = await list({ prefix: `capsules/${id}.json` });
+      const { blobs } = await list({
+        prefix: `capsules/${id}`,
+        token: blobToken,
+      });
+
       if (blobs && blobs.length > 0) {
-        const res = await fetch(blobs[0].url, { next: { revalidate: 60 } });
+        // Find exact match or first matching file
+        const target = blobs.find((b) => b.pathname.includes(id)) || blobs[0];
+        const fetchUrl = target.downloadUrl || target.url;
+
+        const res = await fetch(fetchUrl, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           return data as CapsuleData;

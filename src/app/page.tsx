@@ -187,16 +187,25 @@ export default function HomePage() {
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
-          finalShareUrl = `${origin}/open?id=${data.id}`;
-          storageActive = Boolean(
-            data.hasPersistentStorage ||
+          const isCloudSaved = Boolean(
             data.storageType === 'blob' ||
-            data.storageType === 'redis'
+            data.storageType === 'redis' ||
+            data.hasPersistentStorage
           );
+          if (isCloudSaved) {
+            finalShareUrl = `${origin}/open?id=${data.id}`;
+            storageActive = true;
+          } else {
+            // If cloud storage is not active yet on deployment, include data hash fallback
+            // so opening on other devices/phones will never fail with 404!
+            finalShareUrl = `${origin}/open?id=${data.id}#data=${encoded}`;
+            storageActive = false;
+          }
         }
       }
     } catch (err) {
       console.warn('API save error:', err);
+      finalShareUrl = `${origin}/open?id=${capsule.id}#data=${encoded}`;
     }
 
     setHasServerStorage(storageActive);

@@ -20,32 +20,42 @@ function OpenCapsuleContent() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   useEffect(() => {
-    // 1. Try decoding from hash (#data=...)
+    // 1. Try decoding from hash (#data=...) first if present
     const hash = window.location.hash;
+    let decodedFromHash: CapsuleData | null = null;
     if (hash && hash.includes('data=')) {
       const encoded = hash.split('data=')[1];
       if (encoded) {
-        const decoded = decodeCapsule(encoded);
-        if (decoded) {
-          setCapsule(decoded);
+        decodedFromHash = decodeCapsule(encoded);
+        if (decodedFromHash) {
+          setCapsule(decodedFromHash);
           setLoading(false);
           return;
         }
       }
     }
 
-    // 2. Try fetching from query param (?id=...) or server
+    // 2. Try fetching from query param (?id=...) from server
     const id = searchParams.get('id');
     if (id) {
       fetch(`/api/capsules/${id}`)
-        .then((res) => res.json())
+        .then((res) => {
+          if (!res.ok) throw new Error('Not found on server');
+          return res.json();
+        })
         .then((data) => {
           if (data && data.capsule) {
             setCapsule(data.capsule);
+            setLoading(false);
           } else {
-            // Check local vault as fallback
-            const local = localStorage.getItem('joraaa_saved_capsules');
-            if (local) {
+            throw new Error('No capsule in response');
+          }
+        })
+        .catch(() => {
+          // Check local vault as fallback
+          const local = localStorage.getItem('joraaa_saved_capsules');
+          if (local) {
+            try {
               const list: CapsuleData[] = JSON.parse(local);
               const found = list.find((c) => c.id === id);
               if (found) {
@@ -53,13 +63,16 @@ function OpenCapsuleContent() {
                 setLoading(false);
                 return;
               }
-            }
-            setError('Amplop ini tidak ditemukan atau tautan belum lengkap.');
+            } catch {}
           }
-          setLoading(false);
-        })
-        .catch(() => {
-          setError('Gagal memuat amplop kenangan.');
+
+          if (decodedFromHash) {
+            setCapsule(decodedFromHash);
+            setLoading(false);
+            return;
+          }
+
+          setError('Amplop ini tidak ditemukan atau tautan belum lengkap.');
           setLoading(false);
         });
       return;
