@@ -173,7 +173,7 @@ export default function HomePage() {
     setFallbackHashUrl(fullHashUrl);
 
     // Primary clean short link (only ~43 characters, perfect for WhatsApp)
-    let finalShareUrl = `${origin}/open?id=${capsule.id}`;
+    const cleanShortUrl = `${origin}/open?id=${capsule.id}`;
     let storageActive = false;
 
     try {
@@ -187,48 +187,15 @@ export default function HomePage() {
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
-          const isCloudSaved = Boolean(
-            data.storageType === 'blob' ||
-            data.storageType === 'redis' ||
-            data.hasPersistentStorage
-          );
-          if (isCloudSaved) {
-            finalShareUrl = `${origin}/open?id=${data.id}`;
-            storageActive = true;
-          } else {
-            // If cloud storage is not active yet on deployment, include data hash fallback
-            // so opening on other devices/phones will never fail with 404!
-            finalShareUrl = `${origin}/open?id=${data.id}#data=${encoded}`;
-            storageActive = false;
-          }
+          storageActive = true;
         }
       }
     } catch (err) {
       console.warn('API save error:', err);
-      finalShareUrl = `${origin}/open?id=${capsule.id}#data=${encoded}`;
-    }
-
-    // If cloud storage is not yet active and the hash is short enough, attempt URL shortening for WhatsApp
-    if (!storageActive && finalShareUrl.length < 3500) {
-      try {
-        const shortenRes = await fetch('/api/shorten', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: finalShareUrl }),
-        });
-        if (shortenRes.ok) {
-          const shortenData = await shortenRes.json();
-          if (shortenData.shortUrl && shortenData.shortUrl.startsWith('http')) {
-            finalShareUrl = shortenData.shortUrl;
-          }
-        }
-      } catch (shortenErr) {
-        console.warn('Shorten API error:', shortenErr);
-      }
     }
 
     setHasServerStorage(storageActive);
-    setGeneratedShareUrl(finalShareUrl);
+    setGeneratedShareUrl(cleanShortUrl);
     setIsPublishing(false);
     setIsShareModalOpen(true);
   };

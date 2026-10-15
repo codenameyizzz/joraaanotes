@@ -30,7 +30,7 @@ export function getBlobToken(): string | undefined {
 }
 
 export function hasVercelBlob(): boolean {
-  return Boolean(getBlobToken());
+  return Boolean(getBlobToken() || process.env.BLOB_STORE_ID);
 }
 
 export function hasPersistentStorage(): boolean {
@@ -69,16 +69,21 @@ export async function saveCapsuleToServer(capsule: CapsuleData): Promise<{
   url?: string;
 }> {
   // 1. Primary: Vercel Blob (Free 1GB built into Vercel Hobby plan!)
-  const blobToken = getBlobToken();
-  if (blobToken) {
+  if (hasVercelBlob()) {
     try {
-      const blob = await put(`capsules/${capsule.id}.json`, JSON.stringify(capsule), {
+      const blobToken = getBlobToken();
+      const putOptions: any = {
         access: 'public',
         addRandomSuffix: false,
         allowOverwrite: true,
         contentType: 'application/json',
-        token: blobToken,
-      });
+      };
+      if (blobToken) {
+        putOptions.token = blobToken;
+      }
+
+      // Vercel Blob put works with BLOB_STORE_ID or token automatically
+      const blob = await put(`capsules/${capsule.id}.json`, JSON.stringify(capsule), putOptions);
 
       return {
         success: true,
@@ -123,13 +128,35 @@ export async function saveCapsuleToServer(capsule: CapsuleData): Promise<{
  */
 export async function getCapsuleFromServer(id: string): Promise<CapsuleData | null> {
   // 1. Check Vercel Blob
-  const blobToken = getBlobToken();
-  if (blobToken) {
+  if (hasVercelBlob()) {
+    // A. Direct fetch from public store URL if BLOB_STORE_ID exists (ultra-fast edge)
+    const storeId = process.env.BLOB_STORE_ID;
+    if (storeId) {
+      try {
+        const publicUrl = `https://${storeId}.public.blob.vercel-storage.com/capsules/${id}.json`;
+        const res = await fetch(publicUrl, { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.id) {
+            return data as CapsuleData;
+          }
+        }
+      } catch (err) {
+        console.warn('Direct blob fetch error:', err);
+      }
+    }
+
+    // B. List method
     try {
-      const { blobs } = await list({
+      const blobToken = getBlobToken();
+      const listOptions: any = {
         prefix: `capsules/${id}`,
-        token: blobToken,
-      });
+      };
+      if (blobToken) {
+        listOptions.token = blobToken;
+      }
+
+      const { blobs } = await list(listOptions);
 
       if (blobs && blobs.length > 0) {
         // Find exact match or first matching file
@@ -143,7 +170,7 @@ export async function getCapsuleFromServer(id: string): Promise<CapsuleData | nu
         }
       }
     } catch (err) {
-      console.error('Failed to get from Vercel Blob:', err);
+      console.error('Failed to get from Vercel Blob list:', err);
     }
   }
 

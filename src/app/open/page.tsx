@@ -149,7 +149,8 @@ function OpenCapsuleContent() {
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
         capsule={capsule}
-        shareUrl={currentUrl}
+        shareUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/open?id=${capsule.id}`}
+        fallbackUrl={currentUrl.includes('#data=') ? currentUrl : undefined}
       />
     </>
   );
