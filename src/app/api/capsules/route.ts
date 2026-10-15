@@ -17,15 +17,30 @@ export async function POST(req: Request) {
       storageType: result.storageType,
       hasPersistentStorage: hasPersistentStorage(),
     });
-  } catch (err) {
+  } catch (err: any) {
     console.error('API save error:', err);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({
+      error: 'Internal Server Error',
+      message: err?.message || String(err),
+      stack: err?.stack,
+    }, { status: 500 });
   }
 }
 
 export async function GET() {
+  const envKeys = Object.keys(process.env).filter(
+    (k) =>
+      k.includes('BLOB') ||
+      k.includes('TOKEN') ||
+      k.includes('KV') ||
+      k.includes('STORAGE') ||
+      k.includes('REDIS')
+  );
+
   return NextResponse.json({
     status: 'ok',
     hasPersistentStorage: hasPersistentStorage(),
+    matchingEnvKeys: envKeys,
+    nodeEnv: process.env.NODE_ENV,
   });
 }
