@@ -136,7 +136,7 @@ export default function VoiceNotePlayer({
     if (!ctx || !buffer) return;
 
     if (ctx.state === 'suspended') {
-      ctx.resume().catch(() => {});
+      ctx.resume().catch(() => { });
     }
 
     sounds.pauseClairDeLune();
@@ -182,7 +182,7 @@ export default function VoiceNotePlayer({
       pausedAtRef.current = ctx.currentTime - startTimeRef.current;
       try {
         bufferSourceRef.current.stop();
-      } catch {}
+      } catch { }
       bufferSourceRef.current = null;
     }
     if (animationFrameRef.current) {
@@ -296,9 +296,9 @@ export default function VoiceNotePlayer({
       {/* Mini Top Banner */}
       <div className="flex items-center justify-between mb-3.5 border-b border-[#E8DEC9] pb-2.5">
         <div className="flex items-center gap-1.5">
-          <Sparkles size={13} style={{ color: themeColor }} />
+          {/* <Sparkles size={13} style={{ color: themeColor }} /> */}
           <span className="text-xs font-serif italic text-[#7D7060]">
-            Sepucuk Pesan Suara
+            Voice Note
           </span>
         </div>
 
@@ -307,19 +307,18 @@ export default function VoiceNotePlayer({
           <button
             type="button"
             onClick={toggleVolumeBoost}
-            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-serif italic transition-all border ${
-              volumeBoost > 1
-                ? 'bg-[#EADFA8] text-[#4A3D1E] border-[#DAC386] font-medium'
-                : 'bg-white/80 text-[#7D7060] border-[#E8DEC9] hover:bg-white'
-            }`}
+            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-serif italic transition-all border ${volumeBoost > 1
+              ? 'bg-[#EADFA8] text-[#4A3D1E] border-[#DAC386] font-medium'
+              : 'bg-white/80 text-[#7D7060] border-[#E8DEC9] hover:bg-white'
+              }`}
             title="Tingkatkan kenyaringan suara bisikan"
           >
             <Volume2 size={11} />
-            <span>Kenyaringan {volumeBoost}x</span>
+            <span>Volume {volumeBoost}x</span>
           </button>
 
           <span className="text-xs font-handwriting text-[#8C7E6E]">
-            {authorName ? `Dari: ${authorName}` : 'Dengarkan Rekaman'}
+            {authorName ? `From: ${authorName}` : 'Dengarkan Rekaman'}
           </span>
         </div>
       </div>
@@ -373,18 +372,18 @@ export default function VoiceNotePlayer({
                   animate={
                     isPlaying
                       ? {
-                          height: [`${Math.max(20, h * 0.4)}%`, `${h}%`, `${Math.max(25, h * 0.6)}%`],
-                        }
+                        height: [`${Math.max(20, h * 0.4)}%`, `${h}%`, `${Math.max(25, h * 0.6)}%`],
+                      }
                       : { height: `${h * 0.7}%` }
                   }
                   transition={
                     isPlaying
                       ? {
-                          duration: 0.5 + (i % 4) * 0.15,
-                          repeat: Infinity,
-                          repeatType: 'reverse',
-                          ease: 'easeInOut',
-                        }
+                        duration: 0.5 + (i % 4) * 0.15,
+                        repeat: Infinity,
+                        repeatType: 'reverse',
+                        ease: 'easeInOut',
+                      }
                       : { duration: 0.3 }
                   }
                   className="flex-1 max-w-[4px] rounded-full transition-colors"

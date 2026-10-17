@@ -128,6 +128,16 @@ export default function LetterReader({
         quality: 0.95,
         pixelRatio: 2, // High resolution for crisp print/keepsake
         cacheBust: true,
+        filter: (domNode) => {
+          if (
+            domNode instanceof HTMLElement &&
+            (domNode.dataset?.excludeFromImage === 'true' ||
+              domNode.classList?.contains('exclude-from-image'))
+          ) {
+            return false;
+          }
+          return true;
+        },
       });
 
       // Trigger download
@@ -212,11 +222,10 @@ export default function LetterReader({
             <button
               type="button"
               onClick={toggleAmbient}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-xs font-serif transition-all shadow-xs ${
-                isAmbientOn
-                  ? 'bg-[#2B2520] text-white border-[#2B2520]'
-                  : 'bg-white/75 text-[#5C5044] border-[#E5DACB] hover:bg-white'
-              }`}
+              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-xs font-serif transition-all shadow-xs ${isAmbientOn
+                ? 'bg-[#2B2520] text-white border-[#2B2520]'
+                : 'bg-white/75 text-[#5C5044] border-[#E5DACB] hover:bg-white'
+                }`}
               title="Clair de Lune — Claude Debussy (30 Detik)"
             >
               {isAmbientOn ? (
@@ -395,9 +404,12 @@ export default function LetterReader({
             {capsule.message}
           </div>
 
-          {/* Voice Note Section (if attached) */}
+          {/* Voice Note Section (if attached) - Excluded from downloaded image keepsake */}
           {capsule.voiceNote && (
-            <div className="relative z-15">
+            <div
+              className="relative z-15 exclude-from-image"
+              data-exclude-from-image="true"
+            >
               <VoiceNotePlayer
                 voiceNote={capsule.voiceNote}
                 authorName={capsule.author}
@@ -411,11 +423,11 @@ export default function LetterReader({
             <div className="my-12 pt-6 border-t border-[#ECE3D5] relative z-10">
               <div className="text-center mb-8">
                 <span className="inline-flex items-center gap-1.5 font-handwriting text-xl text-[#7D6F61]">
-                  <Sparkles size={14} className="text-[#BA6E52]" />
-                  <span>Potret Kenangan ({capsule.photos.length})</span>
+                  {/* <Sparkles size={14} className="text-[#BA6E52]" /> */}
+                  <span>Images ({capsule.photos.length})</span>
                 </span>
                 <p className="font-serif italic text-xs text-[#9E9285] mt-0.5">
-                  Ketuk foto untuk membalik & membaca coretan rahasia
+                  Tap to see the notes behind it!
                 </p>
               </div>
 
@@ -474,11 +486,10 @@ export default function LetterReader({
               type="button"
               onClick={handleSaveAsImage}
               disabled={isSavingImage}
-              className={`inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-xs font-serif italic transition-all shadow-sm active:scale-95 shrink-0 ${
-                saveSuccess
-                  ? 'bg-[#EAF2E4] text-[#3B6631] border border-[#C5DDBB]'
-                  : 'bg-[#2B231D] text-white hover:bg-[#3D332A]'
-              }`}
+              className={`inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-xs font-serif italic transition-all shadow-sm active:scale-95 shrink-0 ${saveSuccess
+                ? 'bg-[#EAF2E4] text-[#3B6631] border border-[#C5DDBB]'
+                : 'bg-[#2B231D] text-white hover:bg-[#3D332A]'
+                }`}
             >
               {isSavingImage ? (
                 <>
@@ -493,7 +504,7 @@ export default function LetterReader({
               ) : (
                 <>
                   <Download size={14} />
-                  <span>Simpan sebagai Gambar (PNG)</span>
+                  <span>Image (PNG)</span>
                 </>
               )}
             </button>
@@ -514,7 +525,7 @@ export default function LetterReader({
         {/* Creator Attribution */}
         <div className="text-center pb-8 pt-2">
           <p className="font-serif italic text-xs text-[#7A6E62]">
-            Made by <span className="font-medium text-[#2B231D]">Yizreel Schwartz Sipahutar</span>
+            Created by <span className="font-medium text-[#2B231D]">yizzzrl</span>
           </p>
         </div>
       </motion.main>

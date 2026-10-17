@@ -137,22 +137,22 @@ export default function EnvelopeView({ capsule, onOpen }: EnvelopeViewProps) {
 
         {(capsule.voiceNote || (capsule.photos && capsule.photos.length > 0) || chosenFlower) && (
           <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
-            {capsule.voiceNote && (
+            {/* {capsule.voiceNote && (
               <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#BA6E52]/10 border border-[#BA6E52]/20 text-xs font-serif text-[#964332]">
-                <span>Pesan Suara</span>
+                <span>Voice Note</span>
               </span>
-            )}
-            {chosenFlower && (
+            )} */}
+            {/* {chosenFlower && (
               <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#EAF2E4] border border-[#D0E2C8] text-xs font-serif text-[#446A3A]">
                 <img src={chosenFlower.image} alt={chosenFlower.name} className="w-3.5 h-3.5 object-contain" />
                 <span>{chosenFlower.name}</span>
               </span>
-            )}
-            {capsule.photos && capsule.photos.length > 0 && (
+            )} */}
+            {/* {capsule.photos && capsule.photos.length > 0 && (
               <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/75 border border-[#E5DACB] text-xs font-serif text-[#7A6F63]">
                 <span>{capsule.photos.length} Potret Kenangan</span>
               </span>
-            )}
+            )} */}
           </div>
         )}
       </motion.div>
@@ -212,11 +212,11 @@ export default function EnvelopeView({ capsule, onOpen }: EnvelopeViewProps) {
             animate={
               isOpening
                 ? {
-                    y: [-10, -90, -220],
-                    scale: [0.98, 1.05, 1.15],
-                    rotate: [0, -0.5, -1],
-                    opacity: [0.9, 1, 1],
-                  }
+                  y: [-10, -90, -220],
+                  scale: [0.98, 1.05, 1.15],
+                  rotate: [0, -0.5, -1],
+                  opacity: [0.9, 1, 1],
+                }
                 : { y: 0, opacity: 0.92, scale: 0.98, rotate: 0 }
             }
             transition={{
@@ -415,7 +415,7 @@ export default function EnvelopeView({ capsule, onOpen }: EnvelopeViewProps) {
         {/* Creator Attribution */}
         <div className="mt-8">
           <p className="font-serif italic text-xs text-[#8A7D70]/80">
-            Made by <span className="font-medium text-[#2B231D]">Yizreel Schwartz Sipahutar</span>
+            Created by <span className="font-medium text-[#2B231D]">yizzzrl</span>
           </p>
         </div>
       </motion.div>
