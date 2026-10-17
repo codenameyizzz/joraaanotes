@@ -297,8 +297,8 @@ export default function VoiceNotePlayer({
       <div className="flex items-center justify-between mb-3.5 border-b border-[#E8DEC9] pb-2.5">
         <div className="flex items-center gap-1.5">
           <Sparkles size={13} style={{ color: themeColor }} />
-          <span className="text-[10px] font-mono tracking-widest uppercase font-semibold text-[#7D7060]">
-            SEPUCUK PESAN SUARA
+          <span className="text-xs font-serif italic text-[#7D7060]">
+            Sepucuk Pesan Suara
           </span>
         </div>
 
@@ -307,18 +307,18 @@ export default function VoiceNotePlayer({
           <button
             type="button"
             onClick={toggleVolumeBoost}
-            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono transition-all border ${
+            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-serif italic transition-all border ${
               volumeBoost > 1
-                ? 'bg-[#EADFA8] text-[#4A3D1E] border-[#DAC386] font-semibold'
+                ? 'bg-[#EADFA8] text-[#4A3D1E] border-[#DAC386] font-medium'
                 : 'bg-white/80 text-[#7D7060] border-[#E8DEC9] hover:bg-white'
             }`}
             title="Tingkatkan kenyaringan suara bisikan"
           >
-            <Volume2 size={10} />
-            <span>Boost {volumeBoost}x</span>
+            <Volume2 size={11} />
+            <span>Kenyaringan {volumeBoost}x</span>
           </button>
 
-          <span className="text-[10px] font-mono text-[#8C7E6E]">
+          <span className="text-xs font-handwriting text-[#8C7E6E]">
             {authorName ? `Dari: ${authorName}` : 'Dengarkan Rekaman'}
           </span>
         </div>
@@ -411,7 +411,7 @@ export default function VoiceNotePlayer({
           </div>
 
           {/* Time text indicator */}
-          <div className="flex items-center justify-between text-[11px] font-mono text-[#8C7F72] mt-1.5">
+          <div className="flex items-center justify-between text-xs font-serif italic text-[#8C7F72] mt-1.5">
             <span className="flex items-center gap-1">
               <Volume2 size={11} className={isPlaying ? 'animate-pulse text-[#BA6E52]' : ''} />
               <span>

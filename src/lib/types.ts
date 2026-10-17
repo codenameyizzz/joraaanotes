@@ -1,16 +1,22 @@
-export type ThemeId = 'warm-paper' | 'midnight-film' | 'rose-petal' | 'matcha-breeze' | 'vintage-sepia';
+export type ThemeId =
+  | 'warm-paper'
+  | 'midnight-film'
+  | 'rose-petal'
+  | 'matcha-breeze'
+  | 'vintage-sepia'
+  | 'lavender-dusk'
+  | 'terracotta-sun'
+  | 'ocean-breeze'
+  | 'golden-honey'
+  | 'sakura-spring';
 
 export type SealIconType =
-  | 'heart'
-  | 'star'
-  | 'flower'
   | 'lily'
   | 'sunflower'
   | 'rose'
   | 'hydrangea'
-  | 'crescent'
-  | 'envelope'
-  | 'sparkle';
+  | 'heart'
+  | 'star';
 
 export type BotanicalFlowerId =
   | 'none'
@@ -26,7 +32,25 @@ export type BotanicalFlowerId =
   | 'flower-ranunculus'
   | 'flower-pansy';
 
+export type FlowerStickerPosition =
+  | 'top-right'
+  | 'top-left'
+  | 'top-center'
+  | 'bottom-right'
+  | 'bottom-left'
+  | 'sign-off';
+
 export type GarlandBorderId = 'none' | 'sakura-pearl' | 'tiger-lily' | 'tropical-lily';
+
+export type GarlandPosition = 'right' | 'left' | 'both';
+
+export type EnvelopeStyle =
+  | 'classic-triangle'
+  | 'square-baroque'
+  | 'botanical-lining'
+  | 'vintage-airmail';
+
+export type OpenAnimationType = 'blossom-burst' | 'silky-glide' | 'wax-crack';
 
 export interface PhotoItem {
   id: string;
@@ -53,7 +77,12 @@ export interface CapsuleData {
   theme: ThemeId;
   sealIcon: SealIconType;
   flowerDecoration?: BotanicalFlowerId;
+  flowerPosition?: FlowerStickerPosition;
   garlandBorder?: GarlandBorderId;
+  garlandPosition?: GarlandPosition;
+  envelopeStyle?: EnvelopeStyle;
+  openAnimation?: OpenAnimationType;
+  signOffPrefix?: string;
   musicMood: 'lofi-rain' | 'soft-piano' | 'gentle-chimes' | 'none';
   photos: PhotoItem[];
   voiceNote?: VoiceNoteData;
@@ -157,5 +186,80 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     envelopeColor: '#E8DBC9',
     envelopeFlapColor: '#DECDB8',
     liningPatternColor: '#CFBA9F',
+  },
+  'lavender-dusk': {
+    id: 'lavender-dusk',
+    name: 'Lavender Dusk & Lilac',
+    bgClass: 'bg-[#F7F4FA]',
+    paperClass: 'bg-[#FCFAFD]',
+    cardBorder: 'border-[#E6DCF0]',
+    textColor: 'text-[#2C2138]',
+    mutedColor: 'text-[#7C6E8A]',
+    accentColor: '#7E6390',
+    sealColor: '#7E6390',
+    washiDefault: '#E4D6F2',
+    envelopeColor: '#ECE3F5',
+    envelopeFlapColor: '#DFD2EB',
+    liningPatternColor: '#CBBCE0',
+  },
+  'terracotta-sun': {
+    id: 'terracotta-sun',
+    name: 'Tuscan Terracotta & Clay',
+    bgClass: 'bg-[#FAF3EE]',
+    paperClass: 'bg-[#FDF9F6]',
+    cardBorder: 'border-[#EEDDCE]',
+    textColor: 'text-[#3A2218]',
+    mutedColor: 'text-[#8C6454]',
+    accentColor: '#C26749',
+    sealColor: '#B85C3E',
+    washiDefault: '#F2D7C7',
+    envelopeColor: '#F3DFD2',
+    envelopeFlapColor: '#E9CFC0',
+    liningPatternColor: '#DDBFAe',
+  },
+  'ocean-breeze': {
+    id: 'ocean-breeze',
+    name: 'Coastal Sage & Sea Foam',
+    bgClass: 'bg-[#F1F6F7]',
+    paperClass: 'bg-[#F8FBFC]',
+    cardBorder: 'border-[#D2E4E8]',
+    textColor: 'text-[#1D2B30]',
+    mutedColor: 'text-[#5B7882]',
+    accentColor: '#3B7688',
+    sealColor: '#3B7688',
+    washiDefault: '#CDE2E6',
+    envelopeColor: '#D7E9ED',
+    envelopeFlapColor: '#C8DEE3',
+    liningPatternColor: '#AFD0D8',
+  },
+  'golden-honey': {
+    id: 'golden-honey',
+    name: 'Amber Honey & Sunlight',
+    bgClass: 'bg-[#FAF6EB]',
+    paperClass: 'bg-[#FDFBF4]',
+    cardBorder: 'border-[#EBE0C2]',
+    textColor: 'text-[#332711]',
+    mutedColor: 'text-[#877148]',
+    accentColor: '#B88B22',
+    sealColor: '#B88B22',
+    washiDefault: '#F2E4BA',
+    envelopeColor: '#EFE2C4',
+    envelopeFlapColor: '#E4D3AE',
+    liningPatternColor: '#D3BE93',
+  },
+  'sakura-spring': {
+    id: 'sakura-spring',
+    name: 'Sakura & Pearl Blossom',
+    bgClass: 'bg-[#FCF2F5]',
+    paperClass: 'bg-[#FEF9FA]',
+    cardBorder: 'border-[#F5D8E0]',
+    textColor: 'text-[#361E26]',
+    mutedColor: 'text-[#8F6370]',
+    accentColor: '#C95B75',
+    sealColor: '#C95B75',
+    washiDefault: '#F7CFDA',
+    envelopeColor: '#F9DEE5',
+    envelopeFlapColor: '#EFCDD6',
+    liningPatternColor: '#E2B3C0',
   },
 };

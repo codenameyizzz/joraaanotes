@@ -1,4 +1,11 @@
-import { BotanicalFlowerId, GarlandBorderId } from './types';
+import {
+  BotanicalFlowerId,
+  GarlandBorderId,
+  FlowerStickerPosition,
+  GarlandPosition,
+  EnvelopeStyle,
+  OpenAnimationType,
+} from './types';
 
 export interface BotanicalFlowerOption {
   id: BotanicalFlowerId;
@@ -133,6 +140,39 @@ export const GARLAND_BORDERS: GarlandBorderOption[] = [
   },
 ];
 
+export const FLOWER_POSITIONS: Array<{
+  id: FlowerStickerPosition;
+  label: string;
+  className: string;
+  rotation: number;
+}> = [
+  { id: 'top-right', label: 'Pojok Kanan Atas', className: 'top-4 right-4 sm:top-6 sm:right-6', rotation: 8 },
+  { id: 'top-left', label: 'Pojok Kiri Atas', className: 'top-4 left-4 sm:top-6 sm:left-6', rotation: -8 },
+  { id: 'top-center', label: 'Tengah Atas', className: 'top-3 left-1/2 -translate-x-1/2', rotation: 0 },
+  { id: 'bottom-right', label: 'Pojok Kanan Bawah', className: 'bottom-4 right-4 sm:bottom-6 sm:right-6', rotation: 6 },
+  { id: 'bottom-left', label: 'Pojok Kiri Bawah', className: 'bottom-4 left-4 sm:bottom-6 sm:left-6', rotation: -6 },
+  { id: 'sign-off', label: 'Dekat Tanda Tangan', className: 'bottom-20 right-8', rotation: 12 },
+];
+
+export const GARLAND_POSITIONS: Array<{ id: GarlandPosition; label: string; desc: string }> = [
+  { id: 'right', label: 'Tepi Kanan', desc: 'Di sepanjang margin kanan kertas' },
+  { id: 'left', label: 'Tepi Kiri', desc: 'Di sepanjang margin kiri kertas' },
+  { id: 'both', label: 'Kedua Sisi (Kiri & Kanan)', desc: 'Membingkai kedua tepi kertas secara anggun' },
+];
+
+export const ENVELOPE_STYLES: Array<{ id: EnvelopeStyle; name: string; desc: string; icon: string }> = [
+  { id: 'classic-triangle', name: 'Lipatan Segitiga Klasik', desc: 'Bentuk amplop surat cinta tradisional', icon: '✉️' },
+  { id: 'square-baroque', name: 'Flap Persegi Eropa', desc: 'Tutup lurus modern dengan lekukan mewah', icon: '💌' },
+  { id: 'botanical-lining', name: 'Motif Bunga di Bagian Dalam', desc: 'Lining amplop bermotif taman bunga tersembunyi', icon: '🌿' },
+  { id: 'vintage-airmail', name: 'Vintage Airmail Berpita', desc: 'Gaya pos udara klasik penuh nostalgia', icon: '✈️' },
+];
+
+export const OPEN_ANIMATIONS: Array<{ id: OpenAnimationType; name: string; desc: string; icon: string }> = [
+  { id: 'blossom-burst', name: 'Mekar & Semerbak Bunga', desc: 'Kelopak dan kuntum bunga beterbangan keluar berputar 3D', icon: '🌸' },
+  { id: 'silky-glide', name: 'Geser Lembut & Melayang', desc: 'Amplop meluncur turun dan kertas surat melayang naik ke layar', icon: '✨' },
+  { id: 'wax-crack', name: 'Pecah Segel & Kilau Emas', desc: 'Segel pecah dengan percikan butiran kilau hangat', icon: '🕯️' },
+];
+
 export function getBotanicalFlower(id?: BotanicalFlowerId): BotanicalFlowerOption | undefined {
   if (!id || id === 'none') return undefined;
   return BOTANICAL_FLOWERS.find((f) => f.id === id);
@@ -141,4 +181,10 @@ export function getBotanicalFlower(id?: BotanicalFlowerId): BotanicalFlowerOptio
 export function getGarlandBorder(id?: GarlandBorderId): GarlandBorderOption | undefined {
   if (!id || id === 'none') return undefined;
   return GARLAND_BORDERS.find((g) => g.id === id);
+}
+
+export function getFlowerPositionConfig(pos?: FlowerStickerPosition) {
+  const defaultPos = FLOWER_POSITIONS[0];
+  if (!pos) return defaultPos;
+  return FLOWER_POSITIONS.find((p) => p.id === pos) || defaultPos;
 }

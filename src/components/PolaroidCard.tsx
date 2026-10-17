@@ -118,9 +118,9 @@ export default function PolaroidCard({
             <p className="font-handwriting text-xl text-[#2B2621] leading-tight line-clamp-2">
               {photo.caption || 'Sebuah potret kecil...'}
             </p>
-            <div className="flex items-center justify-between text-[11px] font-mono text-[#8C847A] pt-1">
-              <span>{dateStr || 'MEMOIR • 35MM'}</span>
-              <span className="flex items-center gap-1 text-[10px] text-[#A69E94] hover:text-[#2B2621]">
+            <div className="flex items-center justify-between text-xs font-serif italic text-[#8C847A] pt-1">
+              <span>{dateStr || 'Memoir • 35mm'}</span>
+              <span className="flex items-center gap-1 text-[11px] font-handwriting text-[#8A7D70] hover:text-[#2B2621]">
                 <RotateCw size={10} /> balik
               </span>
             </div>
@@ -140,14 +140,14 @@ export default function PolaroidCard({
           {/* Postcard Header */}
           <div className="flex items-start justify-between border-b border-[#DFCDBB] pb-2">
             <div>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-[#8A7969]">
-                POST CARD
+              <span className="text-xs font-serif italic tracking-wider text-[#8A7969]">
+                Post Card
               </span>
-              <p className="text-[9px] font-mono text-[#A89887]">SERIES NO. 04</p>
+              <p className="text-[10px] font-serif text-[#A89887]">Series No. 04</p>
             </div>
             {/* Faux Vintage Postage Stamp */}
             <div className="w-9 h-11 border border-dashed border-[#8A7969] bg-[#EFE7DC] rounded-xs flex flex-col items-center justify-center p-1">
-              <span className="text-[8px] font-mono text-[#8A7969]">STAMP</span>
+              <span className="text-[8px] font-serif text-[#8A7969]">STAMP</span>
               <div className="w-4 h-4 rounded-full bg-[#BA6E52]/20 flex items-center justify-center text-[7px] text-[#BA6E52]">
                 ✿
               </div>
@@ -162,9 +162,9 @@ export default function PolaroidCard({
           </div>
 
           {/* Postcard Footer */}
-          <div className="flex items-center justify-between text-[10px] font-mono text-[#8A7969] border-t border-[#DFCDBB] pt-2">
-            <span>KEPADA KAMU</span>
-            <span className="flex items-center gap-1 text-[9px] text-[#8A7969]">
+          <div className="flex items-center justify-between text-xs font-serif italic text-[#8A7969] border-t border-[#DFCDBB] pt-2">
+            <span>Untukmu yang terkasih</span>
+            <span className="flex items-center gap-1 text-[11px] font-handwriting text-[#8A7969]">
               <RotateCw size={9} /> tap balik
             </span>
           </div>

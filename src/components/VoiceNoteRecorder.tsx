@@ -375,21 +375,21 @@ export default function VoiceNoteRecorder({
             <Radio size={16} />
           </div>
           <div>
-            <h4 className="text-xs font-mono uppercase tracking-wider text-[#7A6C5D] font-semibold flex items-center gap-1.5">
+            <h4 className="text-xs font-serif italic text-[#7A6C5D] font-medium flex items-center gap-1.5">
               <span>Pesan Suara (Voice Note)</span>
-              <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#E4ECDE] text-[#416834] font-normal lowercase">
-                universal wav
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#E4ECDE] text-[#416834] font-serif not-italic">
+                universal audio
               </span>
             </h4>
-            <p className="text-[11px] text-[#9E9080] font-sans">
+            <p className="text-xs text-[#9E9080] font-handwriting">
               Bisikan suara hangatmu yang terdengar jernih di iPhone & Android.
             </p>
           </div>
         </div>
 
         {value && !isRecording && (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#E8F0E4] text-[#4F7744] text-[10px] font-mono font-medium">
-            <CheckCircle2 size={11} />
+          <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-[#E8F0E4] text-[#4F7744] text-xs font-serif italic">
+            <CheckCircle2 size={12} />
             <span>Suara Tersimpan ({formatTime(value.duration)})</span>
           </span>
         )}
@@ -432,7 +432,7 @@ export default function VoiceNoteRecorder({
               })}
             </div>
 
-            <span className="font-mono text-xs font-semibold text-[#D64545]">
+            <span className="font-serif italic text-xs text-[#D64545]">
               {formatTime(recordingSeconds)} / {formatTime(maxDurationSeconds)}
             </span>
           </div>
@@ -442,7 +442,7 @@ export default function VoiceNoteRecorder({
             <button
               type="button"
               onClick={cancelRecording}
-              className="px-3 py-1.5 rounded-lg border border-[#E0D5C3] text-xs font-mono text-[#7D7062] hover:bg-[#FAF6EE] transition-all"
+              className="px-3.5 py-1.5 rounded-lg border border-[#E0D5C3] text-xs font-serif italic text-[#7D7062] hover:bg-[#FAF6EE] transition-all cursor-pointer"
             >
               Batal
             </button>
@@ -450,7 +450,7 @@ export default function VoiceNoteRecorder({
             <button
               type="button"
               onClick={stopRecording}
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#D64545] text-white text-xs font-mono font-medium hover:bg-[#B83838] shadow-sm transition-all active:scale-95"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#D64545] text-white text-xs font-serif italic hover:bg-[#B83838] shadow-sm transition-all active:scale-95 cursor-pointer"
             >
               <Square size={12} fill="white" />
               <span>Selesai Rekam</span>
@@ -488,7 +488,7 @@ export default function VoiceNoteRecorder({
 
             {/* Scrubber & Progress */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between text-[11px] font-mono text-[#8C7F72] mb-1">
+              <div className="flex items-center justify-between text-xs font-serif italic text-[#8C7F72] mb-1">
                 <span>{isPlaying ? 'Memutar Pesan Suara...' : 'Pratinjau Pesan Suara'}</span>
                 <span>
                   {formatTime(currentTime)} / {formatTime(value.duration)}
@@ -548,7 +548,7 @@ export default function VoiceNoteRecorder({
           <button
             type="button"
             onClick={startRecording}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#2B231D] text-white text-xs font-mono font-medium hover:bg-[#3D332A] transition-all active:scale-95 shadow-xs"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#2B231D] text-white text-xs font-serif italic hover:bg-[#3D332A] transition-all active:scale-95 shadow-xs cursor-pointer"
           >
             <Mic size={14} className="text-[#EADFA8]" />
             <span>Mulai Rekam Suara (Maks. 60d)</span>
@@ -558,7 +558,7 @@ export default function VoiceNoteRecorder({
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white border border-[#DACDBA] text-xs font-mono text-[#6A5E50] hover:bg-[#FAF6EE] transition-all"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-white border border-[#DACDBA] text-xs font-serif italic text-[#6A5E50] hover:bg-[#FAF6EE] transition-all cursor-pointer"
           >
             <UploadCloud size={14} />
             <span>Unggah Audio (.mp3, .m4a, .wav)</span>

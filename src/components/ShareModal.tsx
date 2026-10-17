@@ -82,14 +82,14 @@ export default function ShareModal({
 
           {/* Modal Header */}
           <div className="text-center mb-5">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F0E8D8] text-[11px] font-mono text-[#7D7060] mb-2">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#F0E8D8] text-xs font-serif italic text-[#7D7060] mb-2">
               <Sparkles size={12} className="text-[#BA6E52]" />
-              <span>SURAT TELAH TERSEGEL</span>
+              <span>Surat Telah Tersegel Rapi</span>
             </div>
             <h2 className="font-serif text-2xl text-[#2B231D] tracking-tight">
               Bawa dan Berikan Pelan-Pelan
             </h2>
-            <p className="text-xs text-[#7A6E62] font-sans mt-1">
+            <p className="text-xs text-[#7A6E62] font-handwriting text-base mt-1">
               Link pendek WhatsApp-ready sudah siap untuk dikirimkan!
             </p>
           </div>
@@ -97,16 +97,16 @@ export default function ShareModal({
           {/* Capsule Mini Summary */}
           <div className="bg-[#FFFDFB] rounded-xl border border-[#ECE2D2] p-3.5 mb-4 shadow-xs">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-[#9C8F80]">
-                PREVIEW SURAT
+              <span className="text-xs font-serif italic text-[#9C8F80]">
+                Pratinjau Surat
               </span>
               {hasPersistentStorage ? (
-                <span className="text-[10px] font-mono text-[#4F7744] bg-[#E8F0E4] px-2 py-0.5 rounded-full font-medium">
-                  ✓ Vercel Blob Terhubung (100% Gratis)
+                <span className="text-xs font-serif text-[#4F7744] bg-[#E8F0E4] px-2.5 py-0.5 rounded-full font-medium">
+                  ✓ Vercel Blob Terhubung
                 </span>
               ) : (
-                <span className="text-[10px] font-mono text-[#4F7744] bg-[#E8F0E4] px-2 py-0.5 rounded-full font-medium">
-                  ✓ Link Pendek WhatsApp Ready
+                <span className="text-xs font-serif text-[#4F7744] bg-[#E8F0E4] px-2.5 py-0.5 rounded-full font-medium">
+                  ✓ Link Pendek Siap Kirim
                 </span>
               )}
             </div>
@@ -114,18 +114,18 @@ export default function ShareModal({
             <h3 className="font-serif text-base text-[#2B2520] font-normal truncate mt-1">
               {capsule.title}
             </h3>
-            <p className="text-xs font-mono text-[#827568] mt-0.5">
+            <p className="text-xs font-serif italic text-[#827568] mt-0.5">
               Dari: <span className="font-medium text-[#2B2520]">{capsule.author || 'Anonim'}</span> • Untuk:{' '}
               <span className="font-medium text-[#2B2520]">{capsule.recipient || 'Untukmu'}</span>
             </p>
             <div className="flex flex-wrap items-center gap-1.5 mt-2">
               {capsule.voiceNote && (
-                <span className="inline-block text-[10px] font-mono text-[#964332] bg-[#FDF0ED] border border-[#F5C7BE] px-2 py-0.5 rounded-full font-medium">
-                  🎙️ Pesan Suara Terlampir
+                <span className="inline-block text-xs font-serif text-[#964332] bg-[#FDF0ED] border border-[#F5C7BE] px-2.5 py-0.5 rounded-full">
+                  🎙️ Pesan Suara
                 </span>
               )}
               {capsule.photos && capsule.photos.length > 0 && (
-                <span className="inline-block text-[10px] font-mono text-[#8C7F70] bg-[#F5EDE1] px-2 py-0.5 rounded-full">
+                <span className="inline-block text-xs font-serif text-[#8C7F70] bg-[#F5EDE1] px-2.5 py-0.5 rounded-full">
                   📷 {capsule.photos.length} Potret Polaroid
                 </span>
               )}
@@ -135,14 +135,14 @@ export default function ShareModal({
           {/* Share Link Input Box */}
           <div className="mb-4">
             <div className="flex items-center justify-between mb-1.5 px-0.5">
-              <label className="text-[11px] font-mono uppercase tracking-wider text-[#7A6E60] font-medium">
+              <label className="text-xs font-serif text-[#7A6E60]">
                 {showFullHash ? 'Link Lengkap (Data Hash)' : 'Link Pendek WhatsApp'}
               </label>
               {fallbackUrl && (
                 <button
                   type="button"
                   onClick={() => setShowFullHash(!showFullHash)}
-                  className="text-[10px] font-mono text-[#964332] hover:underline"
+                  className="text-xs font-serif italic text-[#964332] hover:underline"
                 >
                   {showFullHash ? 'Gunakan Link Pendek' : 'Lihat Link Lengkap'}
                 </button>
@@ -158,7 +158,7 @@ export default function ShareModal({
               <button
                 type="button"
                 onClick={() => handleCopy(activeUrl)}
-                className={`shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-mono transition-all ${
+                className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-serif italic transition-all ${
                   copied
                     ? 'bg-[#6E7E62] text-white'
                     : 'bg-[#2B231D] text-[#FAF8F5] hover:bg-[#3D332B] active:scale-95'
@@ -177,7 +177,7 @@ export default function ShareModal({
                 )}
               </button>
             </div>
-            <p className="text-[10px] font-mono text-[#8C7E6E] mt-1 px-1">
+            <p className="text-xs font-serif italic text-[#8C7E6E] mt-1.5 px-1">
               {activeUrl.length < 100
                 ? `✨ Link rapi (${activeUrl.length} karakter) — aman dikirim via WhatsApp tanpa terpotong.`
                 : `Ukuran link: ${activeUrl.length} karakter.`}
@@ -190,7 +190,7 @@ export default function ShareModal({
               href={`https://api.whatsapp.com/send?text=${whatsappMessage}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/30 text-xs font-mono text-[#128C7E] transition-all active:scale-95 font-medium"
+              className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/30 text-xs font-serif text-[#128C7E] transition-all active:scale-95 font-medium"
             >
               <MessageCircle size={15} />
               <span>Kirim WhatsApp</span>
@@ -200,7 +200,7 @@ export default function ShareModal({
               href={activeUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-white hover:bg-[#FAF6EE] border border-[#E5DACB] text-xs font-mono text-[#4A3F33] transition-all active:scale-95"
+              className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-white hover:bg-[#FAF6EE] border border-[#E5DACB] text-xs font-serif text-[#4A3F33] transition-all active:scale-95"
             >
               <ExternalLink size={14} />
               <span>Buka Amplop</span>
@@ -212,7 +212,7 @@ export default function ShareModal({
             <button
               type="button"
               onClick={() => setShowVercelGuide(!showVercelGuide)}
-              className="w-full flex items-center justify-between text-[11px] font-mono text-[#6A5E50] hover:text-[#2B231D]"
+              className="w-full flex items-center justify-between text-xs font-serif italic text-[#6A5E50] hover:text-[#2B231D]"
             >
               <span className="flex items-center gap-1.5 font-medium">
                 <Database size={12} className="text-[#964332]" />
@@ -230,14 +230,14 @@ export default function ShareModal({
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="mt-2.5 pt-2.5 border-t border-[#E8DEC8] text-[11px] font-sans text-[#6B5F52] space-y-2"
+                className="mt-2.5 pt-2.5 border-t border-[#E8DEC8] text-xs font-serif text-[#6B5F52] space-y-2"
               >
                 {hasPersistentStorage ? (
                   <>
-                    <p className="font-mono text-[10px] text-[#4F7744] font-semibold">
+                    <p className="font-serif italic text-xs text-[#4F7744] font-semibold">
                       ✓ VERCEL BLOB SUDAH AKTIF (100% GRATIS)
                     </p>
-                    <p className="text-[10px] text-[#5A4E42] font-sans leading-relaxed">
+                    <p className="text-xs text-[#5A4E42] font-serif leading-relaxed">
                       Surat & foto tersimpan aman di Vercel Blob store. Tautan dibagikan secara ringkas dan rapi:
                     </p>
                     <code className="block bg-white/90 p-1.5 rounded border border-[#E0D5C3] text-[#964332] font-mono text-[10px]">
@@ -246,13 +246,13 @@ export default function ShareModal({
                   </>
                 ) : (
                   <>
-                    <p className="font-mono text-[10px] text-[#BA6E52] font-semibold">
+                    <p className="font-serif italic text-xs text-[#BA6E52] font-semibold">
                       CARA MENGAKTIFKAN LINK PENDEK DOMAIN RESMI:
                     </p>
-                    <p className="text-[10px] text-[#5A4E42] font-sans leading-relaxed">
-                      Blob store <span className="font-mono font-bold">joraaa</span> sudah Anda buat! Agar link selalu singkat (~43 karakter) dan foto tersimpan di cloud:
+                    <p className="text-xs text-[#5A4E42] font-serif leading-relaxed">
+                      Blob store <span className="font-bold">joraaa</span> sudah Anda buat! Agar link selalu singkat (~43 karakter) dan foto tersimpan di cloud:
                     </p>
-                    <ol className="list-decimal pl-4 text-[10px] space-y-1 text-[#5A4E42]">
+                    <ol className="list-decimal pl-4 text-xs space-y-1 text-[#5A4E42] font-serif">
                       <li>Buka Vercel -&gt; Project <strong>joraaanotes</strong> -&gt; tab <strong>Storage</strong>.</li>
                       <li>Klik <strong>Connect Store</strong> -&gt; pilih store <strong>joraaa</strong>.</li>
                       <li>Buka tab <strong>Deployments</strong> -&gt; klik titik tiga (...) teratas -&gt; <strong>Redeploy</strong>.</li>
@@ -264,7 +264,7 @@ export default function ShareModal({
           </div>
 
           <div className="mt-4 text-center">
-            <p className="text-[10px] font-mono text-[#A19485]">
+            <p className="text-xs font-handwriting text-[#968878]">
               Surat ini aman & dapat dibuka oleh siapa saja yang memegang tautan.
             </p>
           </div>

@@ -87,7 +87,7 @@ function OpenCapsuleContent() {
     return (
       <div className="min-h-screen bg-[#FAF7F2] flex flex-col items-center justify-center p-4">
         <Loader2 className="animate-spin text-[#964332] mb-3" size={32} />
-        <p className="font-mono text-xs text-[#7A6F63]">Sedang menyiapkan amplop...</p>
+        <p className="font-serif italic text-sm text-[#7A6F63]">Sedang menyiapkan amplop hangat untukmu...</p>
       </div>
     );
   }
@@ -99,12 +99,12 @@ function OpenCapsuleContent() {
           <AlertCircle size={26} />
         </div>
         <h2 className="font-serif text-2xl text-[#2B2520] mb-2">Amplop Tak Ditemukan</h2>
-        <p className="text-xs font-sans text-[#7D7061] max-w-sm mb-6">
+        <p className="font-handwriting text-base text-[#7D7061] max-w-sm mb-6">
           {error || 'Mungkin tautan ini terpotong saat dikirimkan atau pesan telah kadaluarsa.'}
         </p>
         <Link
           href="/"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#2B2520] text-white text-xs font-mono tracking-wider hover:bg-[#3D352E] transition-all"
+          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#2B2520] text-white text-xs font-serif italic hover:bg-[#3D352E] transition-all shadow-sm"
         >
           <ArrowLeft size={13} />
           <span>Kembali ke Halaman Utama</span>
