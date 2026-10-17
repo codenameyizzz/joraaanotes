@@ -15,6 +15,8 @@ export type SealIconType =
   | 'sunflower'
   | 'rose'
   | 'hydrangea'
+  | 'peony'
+  | 'gerbera'
   | 'heart'
   | 'star';
 
@@ -32,6 +34,8 @@ export type BotanicalFlowerId =
   | 'flower-ranunculus'
   | 'flower-pansy';
 
+export type FlowerSize = 'sm' | 'md' | 'lg' | 'xl';
+
 export type FlowerStickerPosition =
   | 'top-right'
   | 'top-left'
@@ -40,7 +44,13 @@ export type FlowerStickerPosition =
   | 'bottom-left'
   | 'sign-off';
 
-export type GarlandBorderId = 'none' | 'sakura-pearl' | 'tiger-lily' | 'tropical-lily';
+export type GarlandBorderId =
+  | 'none'
+  | 'tiger-lily'
+  | 'sakura-pearl'
+  | 'tropical-lily'
+  | 'hydrangea-corners'
+  | 'wildflower-cluster';
 
 export type GarlandPosition = 'right' | 'left' | 'both';
 
@@ -78,6 +88,8 @@ export interface CapsuleData {
   sealIcon: SealIconType;
   flowerDecoration?: BotanicalFlowerId;
   flowerPosition?: FlowerStickerPosition;
+  flowerSize?: FlowerSize;
+  signOffFlower?: BotanicalFlowerId;
   garlandBorder?: GarlandBorderId;
   garlandPosition?: GarlandPosition;
   envelopeStyle?: EnvelopeStyle;

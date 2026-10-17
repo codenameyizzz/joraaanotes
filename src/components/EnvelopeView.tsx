@@ -127,12 +127,8 @@ export default function EnvelopeView({ capsule, onOpen }: EnvelopeViewProps) {
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         className="text-center mb-8 max-w-md z-10"
       >
-        <div className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-white/70 border border-[#E5DACB] text-xs font-serif italic text-[#7A6F63] mb-3 backdrop-blur-xs shadow-xs">
-          <Sparkles size={12} className="text-[#BA6E52]" />
-          <span>Sepucuk surat rahasia untukmu</span>
-        </div>
         <h1 className="font-serif text-3xl sm:text-4xl text-[#2B2520] tracking-tight">
-          Buka Segel & Temukan Pesan Hangat
+          Buka Surat dan Temukan Pesan
         </h1>
         <p className="font-handwriting text-xl text-[#7D7061] mt-1.5">
           Ditulis dengan tulus oleh{' '}
@@ -142,18 +138,19 @@ export default function EnvelopeView({ capsule, onOpen }: EnvelopeViewProps) {
         {(capsule.voiceNote || (capsule.photos && capsule.photos.length > 0) || chosenFlower) && (
           <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
             {capsule.voiceNote && (
-              <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-[#BA6E52]/10 border border-[#BA6E52]/20 text-xs font-serif text-[#964332]">
-                🎙️ Pesan Suara
+              <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#BA6E52]/10 border border-[#BA6E52]/20 text-xs font-serif text-[#964332]">
+                <span>Pesan Suara</span>
               </span>
             )}
             {chosenFlower && (
-              <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-[#EAF2E4] border border-[#D0E2C8] text-xs font-serif text-[#446A3A]">
-                {chosenFlower.symbol} {chosenFlower.name}
+              <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#EAF2E4] border border-[#D0E2C8] text-xs font-serif text-[#446A3A]">
+                <img src={chosenFlower.image} alt={chosenFlower.name} className="w-3.5 h-3.5 object-contain" />
+                <span>{chosenFlower.name}</span>
               </span>
             )}
             {capsule.photos && capsule.photos.length > 0 && (
-              <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-white/75 border border-[#E5DACB] text-xs font-serif text-[#7A6F63]">
-                📷 {capsule.photos.length} Potret
+              <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/75 border border-[#E5DACB] text-xs font-serif text-[#7A6F63]">
+                <span>{capsule.photos.length} Potret Kenangan</span>
               </span>
             )}
           </div>
@@ -409,11 +406,18 @@ export default function EnvelopeView({ capsule, onOpen }: EnvelopeViewProps) {
           className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-[#2B2520] text-[#FAF8F5] text-sm font-serif italic shadow-lg hover:bg-[#3D352E] hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-75 disabled:cursor-wait"
         >
           <MailOpen size={15} />
-          <span>{isOpening ? 'Membuka Segel Bunga...' : 'Buka Segel Amplop'}</span>
+          <span>{isOpening ? 'Membuka Amplop...' : 'Buka Amplop'}</span>
         </button>
-        <p className="font-handwriting text-lg text-[#857668] mt-2">
-          Ketuk segel untuk membuka kenangan di dalamnya...
+        <p className="font-handwriting text-xl text-[#7D7061] mt-2.5">
+          let the word finds you
         </p>
+
+        {/* Creator Attribution */}
+        <div className="mt-8">
+          <p className="font-serif italic text-xs text-[#8A7D70]/80">
+            Made by <span className="font-medium text-[#2B231D]">Yizreel Schwartz Sipahutar</span>
+          </p>
+        </div>
       </motion.div>
     </div>
   );

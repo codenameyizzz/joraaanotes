@@ -20,6 +20,11 @@ import {
   Sparkle,
   ChevronRight,
   FileText,
+  Mail,
+  HeartHandshake,
+  Feather,
+  Wind,
+  Flame,
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import {
@@ -30,6 +35,7 @@ import {
   VoiceNoteData,
   BotanicalFlowerId,
   FlowerStickerPosition,
+  FlowerSize,
   GarlandBorderId,
   GarlandPosition,
   EnvelopeStyle,
@@ -43,11 +49,13 @@ import {
   GARLAND_BORDERS,
   FLOWER_POSITIONS,
   GARLAND_POSITIONS,
+  FLOWER_SIZES,
   ENVELOPE_STYLES,
   OPEN_ANIMATIONS,
   getBotanicalFlower,
   getGarlandBorder,
   getFlowerPositionConfig,
+  getFlowerSizeClass,
 } from '@/lib/botanical';
 import WaxSeal from '@/components/WaxSeal';
 import PolaroidCard from '@/components/PolaroidCard';
@@ -81,6 +89,7 @@ export default function HomePage() {
   const [selectedSeal, setSelectedSeal] = useState<SealIconType>('lily');
   const [selectedFlower, setSelectedFlower] = useState<BotanicalFlowerId>('pink-lily');
   const [flowerPosition, setFlowerPosition] = useState<FlowerStickerPosition>('top-right');
+  const [flowerSize, setFlowerSize] = useState<FlowerSize>('md');
   const [selectedGarland, setSelectedGarland] = useState<GarlandBorderId>('none');
   const [garlandPosition, setGarlandPosition] = useState<GarlandPosition>('right');
   const [envelopeStyle, setEnvelopeStyle] = useState<EnvelopeStyle>('classic-triangle');
@@ -192,6 +201,7 @@ export default function HomePage() {
       sealIcon: selectedSeal,
       flowerDecoration: selectedFlower,
       flowerPosition,
+      flowerSize,
       garlandBorder: selectedGarland,
       garlandPosition,
       envelopeStyle,
@@ -375,8 +385,12 @@ export default function HomePage() {
       <header className="border-b border-[#E8DFC9] bg-white/60 backdrop-blur-md py-3 px-4 sm:px-8 relative z-20">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-[#964332] text-white flex items-center justify-center text-sm font-serif shadow-xs">
-              🌸
+            <div className="w-8 h-8 rounded-full bg-[#FAF4EA] border border-[#E0D5C3] flex items-center justify-center overflow-hidden p-0.5 shadow-2xs">
+              <img
+                src="/botanical/pink-lily.png"
+                alt="Joraaa Notes"
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
               <span className="font-serif text-xl tracking-tight font-medium text-[#26201B]">
@@ -404,7 +418,7 @@ export default function HomePage() {
               className="inline-flex items-center gap-1.5 text-xs font-serif italic px-4 py-1.5 rounded-full bg-white border border-[#DACFBF] text-[#4A3F33] hover:bg-[#F9F5EC] transition-all shadow-2xs cursor-pointer"
             >
               <Eye size={13} />
-              <span>Uji Buka Amplop</span>
+              <span>Preview</span>
             </button>
           </div>
         </div>
@@ -422,7 +436,7 @@ export default function HomePage() {
           </p>
         </section>
 
-        {/* View Mode Toggle Switcher: [ ✍️ Meja Tulis ] vs [ 📜 Pratinjau Surat Langsung ] */}
+        {/* View Mode Toggle Switcher (Clean, no emoticons) */}
         <div className="flex items-center justify-center mb-6">
           <div className="inline-flex p-1 rounded-full bg-white/80 border border-[#DFCDBA] shadow-xs backdrop-blur-xs">
             <button
@@ -438,7 +452,7 @@ export default function HomePage() {
               }`}
             >
               <PenTool size={13} />
-              <span>✍️ Meja Tulis (Editor)</span>
+              <span>Meja Tulis</span>
             </button>
 
             <button
@@ -453,8 +467,8 @@ export default function HomePage() {
                   : 'text-[#6E6152] hover:text-[#2B231D]'
               }`}
             >
-              <FileText size={13} />
-              <span>📜 Pratinjau Surat Langsung</span>
+              <Eye size={13} />
+              <span>Pratinjau Surat</span>
             </button>
           </div>
         </div>
@@ -469,7 +483,7 @@ export default function HomePage() {
           >
             <div className="bg-[#FAF6EE] border border-[#E3D6C1] rounded-2xl p-3 mb-4 text-center">
               <span className="font-handwriting text-lg text-[#857262]">
-                🌸 Ini adalah tampilan persis yang akan dilihat penerima saat lembar suratmu terbuka.
+                Ini adalah tampilan persis yang akan dilihat penerima saat lembar surat terbuka.
               </span>
             </div>
             <LetterReader capsule={buildCurrentCapsule()} />
@@ -479,29 +493,52 @@ export default function HomePage() {
         {/* TAB 2: WRITING DESK EDITOR */}
         {editorTab === 'write' && (
           <div className={`relative rounded-2xl p-6 sm:p-10 ${currentThemeConfig.paperClass} border ${currentThemeConfig.cardBorder} shadow-[0_20px_50px_-15px_rgba(40,30,20,0.08),0_2px_4px_rgba(0,0,0,0.02)] transition-colors duration-300 overflow-hidden`}>
-            {/* Live Floral Garland Margin Preview (Right Side or Both) */}
-            {selectedGarland !== 'none' && chosenGarlandConfig?.image && (garlandPosition === 'right' || garlandPosition === 'both') && (
-              <div className="absolute top-0 right-0 bottom-0 w-20 sm:w-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden rounded-r-2xl">
-                <img
-                  src={chosenGarlandConfig.image}
-                  alt="Garland"
-                  className="w-full h-full object-cover object-left"
-                />
-              </div>
+            {/* Live Floral Garland Margin Preview */}
+            {selectedGarland !== 'none' && chosenGarlandConfig?.image && (
+              <>
+                {chosenGarlandConfig.type === 'corners' ? (
+                  <>
+                    <div className="absolute top-0 left-0 w-24 sm:w-32 h-24 sm:h-32 pointer-events-none opacity-85 z-5 select-none overflow-hidden rounded-tl-2xl">
+                      <img
+                        src={chosenGarlandConfig.image}
+                        alt="Garland Corner"
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <div className="absolute bottom-0 right-0 w-24 sm:w-32 h-24 sm:h-32 pointer-events-none opacity-85 z-5 select-none overflow-hidden rounded-br-2xl rotate-180">
+                      <img
+                        src={chosenGarlandConfig.image}
+                        alt="Garland Corner"
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {(garlandPosition === 'right' || garlandPosition === 'both') && (
+                      <div className="absolute top-0 right-0 bottom-0 w-24 sm:w-36 pointer-events-none opacity-85 mix-blend-multiply z-5 select-none overflow-hidden rounded-r-2xl">
+                        <img
+                          src={chosenGarlandConfig.image}
+                          alt="Garland"
+                          className="w-full h-full object-cover object-right"
+                        />
+                      </div>
+                    )}
+                    {(garlandPosition === 'left' || garlandPosition === 'both') && (
+                      <div className="absolute top-0 left-0 bottom-0 w-24 sm:w-36 pointer-events-none opacity-85 mix-blend-multiply z-5 select-none overflow-hidden rounded-l-2xl">
+                        <img
+                          src={chosenGarlandConfig.image}
+                          alt="Garland"
+                          className="w-full h-full object-cover object-left"
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
             )}
 
-            {/* Live Floral Garland Margin Preview (Left Side or Both) */}
-            {selectedGarland !== 'none' && chosenGarlandConfig?.image && (garlandPosition === 'left' || garlandPosition === 'both') && (
-              <div className="absolute top-0 left-0 bottom-0 w-20 sm:w-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden rounded-l-2xl scale-x-[-1]">
-                <img
-                  src={chosenGarlandConfig.image}
-                  alt="Garland"
-                  className="w-full h-full object-cover object-left"
-                />
-              </div>
-            )}
-
-            {/* Pinned Botanical Flower Sticker (Live Preview at Selected Position) */}
+            {/* Pinned Botanical Flower Sticker (Live Preview at Selected Position and Size) */}
             {selectedFlower !== 'none' && chosenFlowerConfig && (
               <div className={`absolute ${flowerPosConfig.className} z-20 pointer-events-none select-none`}>
                 <div
@@ -511,7 +548,7 @@ export default function HomePage() {
                 <img
                   src={chosenFlowerConfig.image}
                   alt="Sticker"
-                  className="w-14 h-14 sm:w-16 sm:h-16 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.15)]"
+                  className={`${getFlowerSizeClass(flowerSize)} object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.15)]`}
                   style={{ transform: `rotate(${flowerPosConfig.rotation}deg)` }}
                 />
               </div>
@@ -767,7 +804,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* 2. Wax Seal Picker (Clean Botanical First, deprecated SVG icons removed) */}
+              {/* 2. Wax Seal Picker (Real Botanical Assets & Classical, No Emojis) */}
               <div>
                 <label className="block font-serif text-xs text-[#7D7060] mb-2">
                   Pilih Ikon Segel Lilin (Wax Seal)
@@ -777,26 +814,36 @@ export default function HomePage() {
                     [
                       {
                         id: 'lily',
-                        label: '🌸 Lily Pink',
-                        icon: <img src="/botanical/pink-lily.png" alt="Lily" className="w-4 h-4 object-contain" />,
+                        label: 'Lily Pink',
+                        icon: <img src="/botanical/pink-lily.png" alt="Lily" className="w-5 h-5 object-contain" />,
                       },
                       {
                         id: 'sunflower',
-                        label: '🌻 Matahari',
-                        icon: <img src="/botanical/sunflower.png" alt="Sunflower" className="w-4 h-4 object-contain" />,
+                        label: 'Bunga Matahari',
+                        icon: <img src="/botanical/sunflower.png" alt="Sunflower" className="w-5 h-5 object-contain" />,
                       },
                       {
                         id: 'rose',
-                        label: '🌹 Mawar Liar',
-                        icon: <img src="/botanical/pink-rose.png" alt="Rose" className="w-4 h-4 object-contain" />,
+                        label: 'Mawar Liar',
+                        icon: <img src="/botanical/pink-rose.png" alt="Rose" className="w-5 h-5 object-contain" />,
                       },
                       {
                         id: 'hydrangea',
-                        label: '🪻 Hydrangea',
-                        icon: <img src="/botanical/flower-blue-hydrangea.png" alt="Hydrangea" className="w-4 h-4 object-contain" />,
+                        label: 'Hydrangea',
+                        icon: <img src="/botanical/flower-blue-hydrangea.png" alt="Hydrangea" className="w-5 h-5 object-contain" />,
                       },
-                      { id: 'heart', label: '🤍 Hati', icon: <Heart size={13} /> },
-                      { id: 'star', label: '⭐ Bintang', icon: <Star size={13} /> },
+                      {
+                        id: 'peony',
+                        label: 'Buket Peony',
+                        icon: <img src="/botanical/bouquet-peony.png" alt="Peony" className="w-5 h-5 object-contain" />,
+                      },
+                      {
+                        id: 'gerbera',
+                        label: 'Gerbera',
+                        icon: <img src="/botanical/flower-gerbera.png" alt="Gerbera" className="w-5 h-5 object-contain" />,
+                      },
+                      { id: 'heart', label: 'Hati', icon: <Heart size={14} className="text-[#964332]" /> },
+                      { id: 'star', label: 'Bintang', icon: <Star size={14} className="text-[#BA6E52]" /> },
                     ] as const
                   ).map((item) => (
                     <button
@@ -806,7 +853,7 @@ export default function HomePage() {
                         sounds.playSoftClick();
                         setSelectedSeal(item.id);
                       }}
-                      className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-xs font-serif transition-all cursor-pointer ${
+                      className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-serif transition-all cursor-pointer ${
                         selectedSeal === item.id
                           ? 'bg-[#26201B] text-white border-[#26201B] shadow-xs'
                           : 'bg-[#F7F2E8] text-[#594E42] border-[#E3D6C3] hover:bg-white'
@@ -819,14 +866,14 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* 3. Botanical Flower Sticker & Custom Position Picker */}
+              {/* 3. Botanical Flower Sticker & Custom Position + Size Picker */}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="font-serif text-xs text-[#7D7060]">
                     Hiasan Stiker Bunga & Posisinya
                   </label>
                   <span className="font-handwriting text-xs text-[#8C7A6B]">
-                    Bebas pilih letak di lembar surat
+                    Bebas pilih letak & ukuran di lembar surat
                   </span>
                 </div>
 
@@ -843,7 +890,9 @@ export default function HomePage() {
                         : 'border-[#E5DACB] bg-[#F7F2E8] hover:bg-white'
                     }`}
                   >
-                    <span className="text-sm">🚫</span>
+                    <div className="w-7 h-7 rounded-lg bg-[#EFE7DC] flex items-center justify-center shrink-0">
+                      <X size={14} className="text-[#8C7D6D]" />
+                    </div>
                     <div className="min-w-0">
                       <p className="font-serif text-xs text-[#332A22] font-medium truncate">
                         Tanpa Bunga
@@ -884,30 +933,59 @@ export default function HomePage() {
                   })}
                 </div>
 
-                {/* Flower Position Selector */}
+                {/* Flower Size & Position Selectors */}
                 {selectedFlower !== 'none' && (
-                  <div className="p-3 rounded-xl bg-[#FAF6EE] border border-[#E8DEC8]">
-                    <span className="block font-serif text-[11px] text-[#7D7060] mb-1.5">
-                      Pilih Posisi Penempelan Stiker Bunga:
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {FLOWER_POSITIONS.map((pos) => (
-                        <button
-                          key={pos.id}
-                          type="button"
-                          onClick={() => {
-                            sounds.playSoftClick();
-                            setFlowerPosition(pos.id);
-                          }}
-                          className={`px-3 py-1 rounded-full text-xs font-serif transition-all cursor-pointer ${
-                            flowerPosition === pos.id
-                              ? 'bg-[#964332] text-white shadow-xs'
-                              : 'bg-white text-[#6E6152] border border-[#DFCDBA] hover:bg-[#FAF5EC]'
-                          }`}
-                        >
-                          {pos.label}
-                        </button>
-                      ))}
+                  <div className="space-y-2.5">
+                    {/* Size Selector */}
+                    <div className="p-3 rounded-xl bg-[#FAF6EE] border border-[#E8DEC8]">
+                      <span className="block font-serif text-[11px] text-[#7D7060] mb-1.5">
+                        Pilih Ukuran Bunga:
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {FLOWER_SIZES.map((sz) => (
+                          <button
+                            key={sz.id}
+                            type="button"
+                            onClick={() => {
+                              sounds.playSoftClick();
+                              setFlowerSize(sz.id);
+                            }}
+                            className={`px-3 py-1 rounded-full text-xs font-serif transition-all cursor-pointer ${
+                              flowerSize === sz.id
+                                ? 'bg-[#964332] text-white shadow-xs'
+                                : 'bg-white text-[#6E6152] border border-[#DFCDBA] hover:bg-[#FAF5EC]'
+                            }`}
+                          >
+                            {sz.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Position Selector */}
+                    <div className="p-3 rounded-xl bg-[#FAF6EE] border border-[#E8DEC8]">
+                      <span className="block font-serif text-[11px] text-[#7D7060] mb-1.5">
+                        Pilih Posisi Penempelan Stiker Bunga:
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {FLOWER_POSITIONS.map((pos) => (
+                          <button
+                            key={pos.id}
+                            type="button"
+                            onClick={() => {
+                              sounds.playSoftClick();
+                              setFlowerPosition(pos.id);
+                            }}
+                            className={`px-3 py-1 rounded-full text-xs font-serif transition-all cursor-pointer ${
+                              flowerPosition === pos.id
+                                ? 'bg-[#964332] text-white shadow-xs'
+                                : 'bg-white text-[#6E6152] border border-[#DFCDBA] hover:bg-[#FAF5EC]'
+                            }`}
+                          >
+                            {pos.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -942,7 +1020,7 @@ export default function HomePage() {
                         }`}
                       >
                         {g.image ? (
-                          <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0 border border-[#E5DACB] bg-[#FAF6EE]">
+                          <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-[#E5DACB] bg-[#FAF6EE]">
                             <img
                               src={g.image}
                               alt={g.name}
@@ -950,8 +1028,8 @@ export default function HomePage() {
                             />
                           </div>
                         ) : (
-                          <div className="w-9 h-9 rounded-lg bg-[#EFE8DD] flex items-center justify-center text-xs shrink-0 text-[#8C7D6D]">
-                            📄
+                          <div className="w-10 h-10 rounded-lg bg-[#EFE8DD] flex items-center justify-center text-xs shrink-0 text-[#8C7D6D]">
+                            <Layers size={16} />
                           </div>
                         )}
                         <div className="min-w-0 flex-1">
@@ -996,7 +1074,7 @@ export default function HomePage() {
                 )}
               </div>
 
-              {/* 5. Envelope Style Selector */}
+              {/* 5. Envelope Style Selector (No emojis) */}
               <div>
                 <label className="block font-serif text-xs text-[#7D7060] mb-2">
                   Variasi Pilihan Desain Amplop
@@ -1018,7 +1096,12 @@ export default function HomePage() {
                             : 'border-[#E5DACB] bg-[#F7F2E8] hover:bg-white'
                         }`}
                       >
-                        <span className="text-lg block mb-0.5">{env.icon}</span>
+                        <div className="flex items-center justify-center mb-1">
+                          {env.id === 'classic-triangle' && <Mail size={18} className="text-[#964332]" />}
+                          {env.id === 'square-baroque' && <HeartHandshake size={18} className="text-[#BA6E52]" />}
+                          {env.id === 'botanical-lining' && <Feather size={18} className="text-[#4E7643]" />}
+                          {env.id === 'vintage-airmail' && <Send size={18} className="text-[#8C7A6B]" />}
+                        </div>
                         <p className="font-serif text-xs text-[#2B231D] font-medium truncate">
                           {env.name}
                         </p>
@@ -1031,7 +1114,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* 6. Opening Animation Variants Selector */}
+              {/* 6. Opening Animation Variants Selector (No emojis) */}
               <div>
                 <label className="block font-serif text-xs text-[#7D7060] mb-2">
                   Variasi Pilihan Animasi Buka Amplop
@@ -1054,7 +1137,9 @@ export default function HomePage() {
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          <span className="text-base">{anim.icon}</span>
+                          {anim.id === 'blossom-burst' && <Sparkles size={16} className="text-[#BA6E52]" />}
+                          {anim.id === 'silky-glide' && <Wind size={16} className="text-[#7A6E62]" />}
+                          {anim.id === 'wax-crack' && <Flame size={16} className="text-[#964332]" />}
                           <p className="font-serif text-xs text-[#2B231D] font-medium">
                             {anim.name}
                           </p>
@@ -1069,7 +1154,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Bottom Actions Row: Preview & Publish */}
+            {/* Bottom Actions Row: Preview & Kirim Surat */}
             <div className="mt-10 pt-6 border-t border-[#ECE2D2] flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">
               <button
                 type="button"
@@ -1077,7 +1162,7 @@ export default function HomePage() {
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full border border-[#D5C7B3] text-xs font-serif italic text-[#4A3F33] hover:bg-white transition-all shadow-xs cursor-pointer"
               >
                 <Eye size={14} />
-                <span>Uji Buka Amplop 3D</span>
+                <span>Preview</span>
               </button>
 
               <button
@@ -1089,12 +1174,12 @@ export default function HomePage() {
                 {isPublishing ? (
                   <>
                     <Loader2 size={14} className="animate-spin text-[#EADFA8]" />
-                    <span>Menyegel Amplop...</span>
+                    <span>Menyiapkan Surat...</span>
                   </>
                 ) : (
                   <>
                     <Send size={14} />
-                    <span>Segel Surat & Buat Link WhatsApp</span>
+                    <span>Kirim Surat</span>
                   </>
                 )}
               </button>
@@ -1164,9 +1249,14 @@ export default function HomePage() {
         />
       )}
 
-      {/* Footer */}
-      <footer className="mt-20 py-8 border-t border-[#E8DFC9] text-center font-handwriting text-base text-[#8C7E70] relative z-10">
-        <p>2026 Joraaa Notes — Abadikan kata-kata hangat yang tak lekang oleh waktu.</p>
+      {/* Footer & Creator Attribution */}
+      <footer className="mt-20 py-8 border-t border-[#E8DFC9] text-center relative z-10">
+        <p className="font-serif italic text-xs text-[#7A6E62]">
+          Made by <span className="font-medium text-[#2B231D]">Yizreel Schwartz Sipahutar</span>
+        </p>
+        <p className="font-handwriting text-base text-[#968878] mt-1">
+          Abadikan kata-kata hangat yang tak lekang oleh waktu.
+        </p>
       </footer>
     </div>
   );

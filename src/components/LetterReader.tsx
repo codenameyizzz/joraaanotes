@@ -25,6 +25,7 @@ import {
   getBotanicalFlower,
   getGarlandBorder,
   getFlowerPositionConfig,
+  getFlowerSizeClass,
 } from '@/lib/botanical';
 
 interface LetterReaderProps {
@@ -254,25 +255,48 @@ export default function LetterReader({
           className={`relative rounded-xs p-7 sm:p-12 ${theme.paperClass} border ${theme.cardBorder} shadow-[0_20px_60px_-15px_rgba(40,30,20,0.1),0_2px_6px_rgba(0,0,0,0.03)] overflow-hidden`}
         >
           {/* Decorative Floral Garland Margin / Border (Right side or Both) */}
-          {chosenGarland && chosenGarland.image && (garlandPos === 'right' || garlandPos === 'both') && (
-            <div className="absolute top-0 right-0 bottom-0 w-20 sm:w-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden">
-              <img
-                src={chosenGarland.image}
-                alt={chosenGarland.name}
-                className="w-full h-full object-cover object-left"
-              />
-            </div>
-          )}
-
-          {/* Decorative Floral Garland Margin / Border (Left side or Both) */}
-          {chosenGarland && chosenGarland.image && (garlandPos === 'left' || garlandPos === 'both') && (
-            <div className="absolute top-0 left-0 bottom-0 w-20 sm:w-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden scale-x-[-1]">
-              <img
-                src={chosenGarland.image}
-                alt={chosenGarland.name}
-                className="w-full h-full object-cover object-left"
-              />
-            </div>
+          {chosenGarland && chosenGarland.image && (
+            <>
+              {chosenGarland.type === 'corners' ? (
+                <>
+                  <div className="absolute top-0 left-0 w-28 sm:w-36 h-28 sm:h-36 pointer-events-none opacity-85 z-5 select-none overflow-hidden">
+                    <img
+                      src={chosenGarland.image}
+                      alt={chosenGarland.name}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="absolute bottom-0 right-0 w-28 sm:w-36 h-28 sm:h-36 pointer-events-none opacity-85 z-5 select-none overflow-hidden rotate-180">
+                    <img
+                      src={chosenGarland.image}
+                      alt={chosenGarland.name}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  {(garlandPos === 'right' || garlandPos === 'both') && (
+                    <div className="absolute top-0 right-0 bottom-0 w-24 sm:w-36 pointer-events-none opacity-85 mix-blend-multiply z-5 select-none overflow-hidden">
+                      <img
+                        src={chosenGarland.image}
+                        alt={chosenGarland.name}
+                        className="w-full h-full object-cover object-right"
+                      />
+                    </div>
+                  )}
+                  {(garlandPos === 'left' || garlandPos === 'both') && (
+                    <div className="absolute top-0 left-0 bottom-0 w-24 sm:w-36 pointer-events-none opacity-85 mix-blend-multiply z-5 select-none overflow-hidden">
+                      <img
+                        src={chosenGarland.image}
+                        alt={chosenGarland.name}
+                        className="w-full h-full object-cover object-left"
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+            </>
           )}
 
           {/* Top Washi Tape accent */}
@@ -294,7 +318,7 @@ export default function LetterReader({
               whileTap={{ scale: 0.95 }}
               transition={{ duration: 0.4 }}
               className={`absolute ${flowerPos.className} z-20 cursor-pointer group select-none`}
-              title={`Ketuk bunga ${chosenFlower.name} untuk menyebarkan kelopak!`}
+              title={`Bunga ${chosenFlower.name}`}
             >
               {/* Washi tape pin over stem */}
               <div
@@ -304,19 +328,15 @@ export default function LetterReader({
               <img
                 src={chosenFlower.image}
                 alt={chosenFlower.name}
-                className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-[0_4px_10px_rgba(0,0,0,0.18)]"
+                className={`${getFlowerSizeClass(capsule.flowerSize)} object-contain drop-shadow-[0_4px_10px_rgba(0,0,0,0.18)]`}
               />
             </motion.div>
           )}
 
-          {/* Letter Meta / Date Stamp */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#ECE3D5] pb-5 mb-8 gap-2 relative z-10">
+          {/* Letter Meta / Date Stamp (Memoir text removed) */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#ECE3D5] pb-4 mb-8 gap-2 relative z-10">
             <div>
-              <p className="font-serif italic text-sm text-[#7D7061] flex items-center gap-1.5">
-                <Sparkles size={12} className="text-[#BA6E52]" />
-                <span>Memoir & Sepucuk Catatan</span>
-              </p>
-              <p className="font-handwriting text-base text-[#8C7D6D] mt-0.5">
+              <p className="font-handwriting text-lg text-[#8C7D6D]">
                 {capsule.dateStr || 'Suatu hari yang tenang'}
               </p>
             </div>
@@ -386,18 +406,15 @@ export default function LetterReader({
             </div>
           )}
 
-          {/* Letter Sign-off with Botanical Blossom Accent & Customizable Prefix */}
+          {/* Letter Sign-off with Botanical Flower Stamp (Meaning wording removed, customizable flower) */}
           <div className="mt-12 pt-6 border-t border-[#ECE3D5] flex items-center justify-between relative z-10">
             {chosenFlower ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center">
                 <img
                   src={chosenFlower.image}
                   alt={chosenFlower.name}
-                  className="w-10 h-10 object-contain drop-shadow-xs opacity-85"
+                  className={`${getFlowerSizeClass(capsule.flowerSize)} object-contain drop-shadow-xs opacity-90`}
                 />
-                <span className="font-handwriting text-lg text-[#857668]">
-                  &ldquo;{chosenFlower.meaning}&rdquo;
-                </span>
               </div>
             ) : (
               <div />
@@ -414,7 +431,7 @@ export default function LetterReader({
           </div>
         </article>
 
-        {/* Save as Keepsake Image Feature (Replaced Send Reactions) */}
+        {/* Save as Keepsake Image Feature */}
         <section className="mt-8 mb-6 bg-white/80 backdrop-blur-md rounded-2xl border border-[#E8DFC9] p-5 shadow-sm text-center relative z-20">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-left">
@@ -455,33 +472,23 @@ export default function LetterReader({
               )}
             </button>
           </div>
-
-          {/* Gentle interactive petal scatter hint in handwriting */}
-          {chosenFlower && (
-            <div className="mt-4 pt-3 border-t border-[#EFE8DD] flex items-center justify-center gap-1.5 text-center">
-              <Sparkles size={13} className="text-[#BA6E52]" />
-              <button
-                type="button"
-                onClick={triggerFlowerShower}
-                className="font-handwriting text-lg text-[#857262] hover:text-[#964332] transition-colors cursor-pointer"
-              >
-                Ketuk di sini untuk menyebarkan semerbak hujan kelopak bunga...
-              </button>
-            </div>
-          )}
         </section>
 
-        {/* Footer: Create Your Own Letter Callout (Soft, warm typography) */}
-        <div className="text-center py-10">
+        {/* Footer: Create Your Own Letter Callout (Shortened wording) */}
+        <div className="text-center py-6">
           <Link
             href="/"
             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#2B231D] text-[#FAF6EE] text-sm font-serif italic hover:bg-[#3D322A] hover:scale-105 active:scale-95 transition-all shadow-md"
           >
             <PenLine size={14} />
-            <span>Tulis Sepucuk Surat Balasan untuknya</span>
+            <span>Tulis Balasan</span>
           </Link>
-          <p className="font-handwriting text-base text-[#918171] mt-2">
-            Abadikan kata-kata hangat yang tak lekang oleh waktu.
+        </div>
+
+        {/* Creator Attribution */}
+        <div className="text-center pb-8 pt-2">
+          <p className="font-serif italic text-xs text-[#7A6E62]">
+            Made by <span className="font-medium text-[#2B231D]">Yizreel Schwartz Sipahutar</span>
           </p>
         </div>
       </motion.main>

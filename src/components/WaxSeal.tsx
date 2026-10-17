@@ -33,7 +33,7 @@ export default function WaxSeal({
   };
 
   const currentSize = sizeMap[size];
-  const isFlowerSeal = ['lily', 'sunflower', 'rose', 'hydrangea'].includes(icon);
+  const isFlowerSeal = ['lily', 'sunflower', 'rose', 'hydrangea', 'peony', 'gerbera'].includes(icon);
 
   const renderIcon = () => {
     const props = {
@@ -72,6 +72,22 @@ export default function WaxSeal({
           <img
             src="/botanical/flower-blue-hydrangea.png"
             alt="Hydrangea"
+            className="w-[125%] h-[125%] max-w-none object-contain drop-shadow-[0_3px_6px_rgba(0,0,0,0.45)] scale-110 pointer-events-none"
+          />
+        );
+      case 'peony':
+        return (
+          <img
+            src="/botanical/bouquet-peony.png"
+            alt="Peony"
+            className="w-[125%] h-[125%] max-w-none object-contain drop-shadow-[0_3px_6px_rgba(0,0,0,0.45)] scale-110 pointer-events-none"
+          />
+        );
+      case 'gerbera':
+        return (
+          <img
+            src="/botanical/flower-gerbera.png"
+            alt="Gerbera"
             className="w-[125%] h-[125%] max-w-none object-contain drop-shadow-[0_3px_6px_rgba(0,0,0,0.45)] scale-110 pointer-events-none"
           />
         );
