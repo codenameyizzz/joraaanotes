@@ -56,6 +56,7 @@ import {
   getGarlandBorder,
   getFlowerPositionConfig,
   getFlowerSizeClass,
+  getGarlandImageClass,
 } from '@/lib/botanical';
 import WaxSeal from '@/components/WaxSeal';
 import PolaroidCard from '@/components/PolaroidCard';
@@ -92,6 +93,9 @@ export default function HomePage() {
   const [flowerSize, setFlowerSize] = useState<FlowerSize>('md');
   const [selectedGarland, setSelectedGarland] = useState<GarlandBorderId>('none');
   const [garlandPosition, setGarlandPosition] = useState<GarlandPosition>('right');
+  const [garlandOffset, setGarlandOffset] = useState<number>(0);
+  const [garlandFlipH, setGarlandFlipH] = useState<boolean>(false);
+  const [garlandFlipV, setGarlandFlipV] = useState<boolean>(false);
   const [envelopeStyle, setEnvelopeStyle] = useState<EnvelopeStyle>('classic-triangle');
   const [openAnimation, setOpenAnimation] = useState<OpenAnimationType>('blossom-burst');
   const [musicMood, setMusicMood] = useState<'lofi-rain' | 'soft-piano' | 'gentle-chimes' | 'none'>('lofi-rain');
@@ -204,6 +208,9 @@ export default function HomePage() {
       flowerSize,
       garlandBorder: selectedGarland,
       garlandPosition,
+      garlandOffset,
+      garlandFlipH,
+      garlandFlipV,
       envelopeStyle,
       openAnimation,
       musicMood,
@@ -498,38 +505,60 @@ export default function HomePage() {
               <>
                 {chosenGarlandConfig.type === 'corners' ? (
                   <>
-                    <div className="absolute top-0 left-0 w-20 sm:w-28 h-20 sm:h-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden rounded-tl-2xl">
+                    <div
+                      className="absolute top-0 w-20 sm:w-28 h-20 sm:h-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden rounded-tl-2xl transition-all duration-200"
+                      style={{ left: `${garlandOffset}px` }}
+                    >
                       <img
                         src={chosenGarlandConfig.image}
                         alt="Garland Corner"
-                        className="w-full h-full object-contain"
+                        className={`w-full h-full object-contain ${garlandFlipH ? 'scale-x-[-1]' : ''} ${garlandFlipV ? 'scale-y-[-1]' : ''}`}
                       />
                     </div>
-                    <div className="absolute bottom-0 right-0 w-20 sm:w-28 h-20 sm:h-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden rounded-br-2xl rotate-180">
+                    <div
+                      className="absolute bottom-0 w-20 sm:w-28 h-20 sm:h-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden rounded-br-2xl rotate-180 transition-all duration-200"
+                      style={{ right: `${garlandOffset}px` }}
+                    >
                       <img
                         src={chosenGarlandConfig.image}
                         alt="Garland Corner"
-                        className="w-full h-full object-contain"
+                        className={`w-full h-full object-contain ${garlandFlipH ? 'scale-x-[-1]' : ''} ${garlandFlipV ? 'scale-y-[-1]' : ''}`}
                       />
                     </div>
                   </>
                 ) : (
                   <>
                     {(garlandPosition === 'right' || garlandPosition === 'both') && (
-                      <div className="absolute top-0 right-0 bottom-0 w-20 sm:w-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden rounded-r-2xl">
+                      <div
+                        className="absolute top-0 bottom-0 w-20 sm:w-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden rounded-r-2xl transition-all duration-200"
+                        style={{ right: `${garlandOffset}px` }}
+                      >
                         <img
                           src={chosenGarlandConfig.image}
                           alt="Garland"
-                          className="w-full h-full object-cover object-right"
+                          className={`w-full h-full object-cover ${getGarlandImageClass(
+                            chosenGarlandConfig.id,
+                            'right',
+                            garlandFlipH,
+                            garlandFlipV
+                          )}`}
                         />
                       </div>
                     )}
                     {(garlandPosition === 'left' || garlandPosition === 'both') && (
-                      <div className="absolute top-0 left-0 bottom-0 w-20 sm:w-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden rounded-l-2xl">
+                      <div
+                        className="absolute top-0 bottom-0 w-20 sm:w-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden rounded-l-2xl transition-all duration-200"
+                        style={{ left: `${garlandOffset}px` }}
+                      >
                         <img
                           src={chosenGarlandConfig.image}
                           alt="Garland"
-                          className="w-full h-full object-cover object-left"
+                          className={`w-full h-full object-cover ${getGarlandImageClass(
+                            chosenGarlandConfig.id,
+                            'left',
+                            garlandFlipH,
+                            garlandFlipV
+                          )}`}
                         />
                       </div>
                     )}
@@ -1047,28 +1076,126 @@ export default function HomePage() {
 
                 {/* Garland Position Selector */}
                 {selectedGarland !== 'none' && (
-                  <div className="p-3 rounded-xl bg-[#FAF6EE] border border-[#E8DEC8]">
-                    <span className="block font-serif text-[11px] text-[#7D7060] mb-1.5">
-                      Letakkan Bingkai Pada:
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {GARLAND_POSITIONS.map((gp) => (
-                        <button
-                          key={gp.id}
-                          type="button"
-                          onClick={() => {
-                            sounds.playSoftClick();
-                            setGarlandPosition(gp.id);
-                          }}
-                          className={`px-3 py-1 rounded-full text-xs font-serif transition-all cursor-pointer ${
-                            garlandPosition === gp.id
-                              ? 'bg-[#964332] text-white shadow-xs'
-                              : 'bg-white text-[#6E6152] border border-[#DFCDBA] hover:bg-[#FAF5EC]'
-                          }`}
-                        >
-                          {gp.label}
-                        </button>
-                      ))}
+                  <div className="space-y-2.5">
+                    <div className="p-3 rounded-xl bg-[#FAF6EE] border border-[#E8DEC8]">
+                      <span className="block font-serif text-[11px] text-[#7D7060] mb-1.5">
+                        Letakkan Bingkai Pada:
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {GARLAND_POSITIONS.map((gp) => (
+                          <button
+                            key={gp.id}
+                            type="button"
+                            onClick={() => {
+                              sounds.playSoftClick();
+                              setGarlandPosition(gp.id);
+                            }}
+                            className={`px-3 py-1 rounded-full text-xs font-serif transition-all cursor-pointer ${
+                              garlandPosition === gp.id
+                                ? 'bg-[#964332] text-white shadow-xs'
+                                : 'bg-white text-[#6E6152] border border-[#DFCDBA] hover:bg-[#FAF5EC]'
+                            }`}
+                          >
+                            {gp.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Custom Garland Margin Offset & Position Slider */}
+                    <div className="p-3.5 rounded-xl bg-[#FAF6EE] border border-[#E8DEC8] space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="font-serif text-[11px] text-[#7D7060]">
+                          Geser Posisi Bingkai (Jarak ke Pinggir Margin):
+                        </label>
+                        <span className="font-mono text-xs font-medium px-2 py-0.5 rounded-md bg-white border border-[#E0D3BF] text-[#7C3627]">
+                          {garlandOffset > 0 ? `+${garlandOffset}px (Masuk)` : garlandOffset < 0 ? `${garlandOffset}px (Keluar Margin)` : '0px (Tepat Tepi Margin)'}
+                        </span>
+                      </div>
+
+                      {/* Range Slider */}
+                      <div className="flex items-center gap-3">
+                        <span className="text-[10px] font-serif text-[#8C7A6B] shrink-0">Rapat Tepi (-50px)</span>
+                        <input
+                          type="range"
+                          min="-50"
+                          max="50"
+                          step="1"
+                          value={garlandOffset}
+                          onChange={(e) => setGarlandOffset(Number(e.target.value))}
+                          className="w-full h-1.5 bg-[#E6DAC8] rounded-lg appearance-none cursor-pointer accent-[#964332]"
+                        />
+                        <span className="text-[10px] font-serif text-[#8C7A6B] shrink-0">Masuk (+50px)</span>
+                      </div>
+
+                      {/* Quick Preset Buttons */}
+                      <div>
+                        <span className="block text-[10px] font-serif text-[#8C7A6B] mb-1.5">Pilihan Presisi Posisi:</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {[
+                            { label: 'Tepat di Tepi Margin Layout (0px)', offset: 0 },
+                            { label: 'Rapat ke Pinggir Kertas (-20px)', offset: -20 },
+                            { label: 'Sedikit Masuk ke Dalam (+15px)', offset: 15 },
+                            { label: 'Di Samping Tulisan (+30px)', offset: 30 },
+                          ].map((preset) => (
+                            <button
+                              key={preset.label}
+                              type="button"
+                              onClick={() => {
+                                sounds.playSoftClick();
+                                setGarlandOffset(preset.offset);
+                              }}
+                              className={`px-2.5 py-1 rounded-lg text-[11px] font-serif transition-all cursor-pointer ${
+                                garlandOffset === preset.offset
+                                  ? 'bg-[#964332] text-white shadow-xs font-medium'
+                                  : 'bg-white text-[#6E6152] border border-[#DFCDBA] hover:bg-[#FAF5EC]'
+                              }`}
+                            >
+                              {preset.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Direction / Flip Toggles (Horizontal & Vertical) */}
+                      <div className="pt-2 border-t border-[#E8DEC8]">
+                        <span className="block text-[10px] font-serif text-[#8C7A6B] mb-1.5">
+                          Arah & Balik Tampilan Bunga:
+                        </span>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              sounds.playSoftClick();
+                              setGarlandFlipH(!garlandFlipH);
+                            }}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-serif transition-all cursor-pointer flex items-center gap-1.5 ${
+                              garlandFlipH
+                                ? 'bg-[#964332] text-white shadow-xs font-medium'
+                                : 'bg-white text-[#6E6152] border border-[#DFCDBA] hover:bg-[#FAF5EC]'
+                            }`}
+                          >
+                            <span>Balik Horisontal (Kiri / Kanan)</span>
+                            {garlandFlipH && <span className="text-[10px] opacity-80">(Aktif)</span>}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              sounds.playSoftClick();
+                              setGarlandFlipV(!garlandFlipV);
+                            }}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-serif transition-all cursor-pointer flex items-center gap-1.5 ${
+                              garlandFlipV
+                                ? 'bg-[#964332] text-white shadow-xs font-medium'
+                                : 'bg-white text-[#6E6152] border border-[#DFCDBA] hover:bg-[#FAF5EC]'
+                            }`}
+                          >
+                            <span>Balik Vertikal (Atas / Bawah)</span>
+                            {garlandFlipV && <span className="text-[10px] opacity-80">(Aktif)</span>}
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}

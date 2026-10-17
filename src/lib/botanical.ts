@@ -196,3 +196,57 @@ export function getFlowerPositionConfig(pos?: FlowerStickerPosition) {
   if (!pos) return defaultPos;
   return FLOWER_POSITIONS.find((p) => p.id === pos) || defaultPos;
 }
+
+/**
+ * Resolves the precise CSS object position and horizontal/vertical flip classes
+ * so that the straight cut line sits flush against the outer margin,
+ * and the soft floral petals bloom inward towards the text.
+ */
+export function getGarlandImageClass(
+  garlandId: GarlandBorderId | undefined,
+  side: 'left' | 'right',
+  flipH: boolean = false,
+  flipV: boolean = false
+): string {
+  let isFlippedX = false;
+  let objectPos = 'object-left';
+
+  if (side === 'right') {
+    // On the right margin: flat cut edge touches the right border,
+    // soft petals blossom to the left into the text
+    if (garlandId === 'sakura-pearl') {
+      objectPos = 'object-right';
+      isFlippedX = true;
+    } else {
+      objectPos = 'object-left';
+      isFlippedX = false;
+    }
+  } else {
+    // On the left margin: flat cut edge touches the left border,
+    // soft petals blossom to the right into the text
+    if (garlandId === 'sakura-pearl') {
+      objectPos = 'object-right';
+      isFlippedX = false;
+    } else {
+      objectPos = 'object-left';
+      isFlippedX = true;
+    }
+  }
+
+  // Allow manual horizontal flip override
+  if (flipH) {
+    isFlippedX = !isFlippedX;
+  }
+
+  const classes = [objectPos];
+  if (isFlippedX && flipV) {
+    classes.push('scale-x-[-1] scale-y-[-1]');
+  } else if (isFlippedX) {
+    classes.push('scale-x-[-1]');
+  } else if (flipV) {
+    classes.push('scale-y-[-1]');
+  }
+
+  return classes.join(' ');
+}
+

@@ -92,6 +92,9 @@ export interface CapsuleData {
   signOffFlower?: BotanicalFlowerId;
   garlandBorder?: GarlandBorderId;
   garlandPosition?: GarlandPosition;
+  garlandOffset?: number;
+  garlandFlipH?: boolean;
+  garlandFlipV?: boolean;
   envelopeStyle?: EnvelopeStyle;
   openAnimation?: OpenAnimationType;
   signOffPrefix?: string;

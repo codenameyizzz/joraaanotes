@@ -26,6 +26,7 @@ import {
   getGarlandBorder,
   getFlowerPositionConfig,
   getFlowerSizeClass,
+  getGarlandImageClass,
 } from '@/lib/botanical';
 
 interface LetterReaderProps {
@@ -65,6 +66,9 @@ export default function LetterReader({
   const chosenGarland = getGarlandBorder(capsule.garlandBorder);
   const flowerPos = getFlowerPositionConfig(capsule.flowerPosition);
   const garlandPos = capsule.garlandPosition || 'right';
+  const garlandOffset = capsule.garlandOffset ?? 0;
+  const garlandFlipH = capsule.garlandFlipH ?? false;
+  const garlandFlipV = capsule.garlandFlipV ?? false;
 
   useEffect(() => {
     // Start Clair de Lune softly when letter opens
@@ -259,38 +263,60 @@ export default function LetterReader({
             <>
               {chosenGarland.type === 'corners' ? (
                 <>
-                  <div className="absolute top-0 left-0 w-20 sm:w-28 h-20 sm:h-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden">
+                  <div
+                    className="absolute top-0 w-20 sm:w-28 h-20 sm:h-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden transition-all duration-200"
+                    style={{ left: `${garlandOffset}px` }}
+                  >
                     <img
                       src={chosenGarland.image}
                       alt={chosenGarland.name}
-                      className="w-full h-full object-contain"
+                      className={`w-full h-full object-contain ${garlandFlipH ? 'scale-x-[-1]' : ''} ${garlandFlipV ? 'scale-y-[-1]' : ''}`}
                     />
                   </div>
-                  <div className="absolute bottom-0 right-0 w-20 sm:w-28 h-20 sm:h-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden rotate-180">
+                  <div
+                    className="absolute bottom-0 w-20 sm:w-28 h-20 sm:h-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden rotate-180 transition-all duration-200"
+                    style={{ right: `${garlandOffset}px` }}
+                  >
                     <img
                       src={chosenGarland.image}
                       alt={chosenGarland.name}
-                      className="w-full h-full object-contain"
+                      className={`w-full h-full object-contain ${garlandFlipH ? 'scale-x-[-1]' : ''} ${garlandFlipV ? 'scale-y-[-1]' : ''}`}
                     />
                   </div>
                 </>
               ) : (
                 <>
                   {(garlandPos === 'right' || garlandPos === 'both') && (
-                    <div className="absolute top-0 right-0 bottom-0 w-20 sm:w-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden">
+                    <div
+                      className="absolute top-0 bottom-0 w-20 sm:w-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden transition-all duration-200"
+                      style={{ right: `${garlandOffset}px` }}
+                    >
                       <img
                         src={chosenGarland.image}
                         alt={chosenGarland.name}
-                        className="w-full h-full object-cover object-right"
+                        className={`w-full h-full object-cover ${getGarlandImageClass(
+                          chosenGarland.id,
+                          'right',
+                          garlandFlipH,
+                          garlandFlipV
+                        )}`}
                       />
                     </div>
                   )}
                   {(garlandPos === 'left' || garlandPos === 'both') && (
-                    <div className="absolute top-0 left-0 bottom-0 w-20 sm:w-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden">
+                    <div
+                      className="absolute top-0 bottom-0 w-20 sm:w-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden transition-all duration-200"
+                      style={{ left: `${garlandOffset}px` }}
+                    >
                       <img
                         src={chosenGarland.image}
                         alt={chosenGarland.name}
-                        className="w-full h-full object-cover object-left"
+                        className={`w-full h-full object-cover ${getGarlandImageClass(
+                          chosenGarland.id,
+                          'left',
+                          garlandFlipH,
+                          garlandFlipV
+                        )}`}
                       />
                     </div>
                   )}
