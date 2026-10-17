@@ -78,6 +78,21 @@ export default function EnvelopeView({ capsule, onOpen }: EnvelopeViewProps) {
           Ditulis dengan tulus oleh{' '}
           <span className="font-semibold text-[#2B2520]">{capsule.author || 'Seseorang'}</span>
         </p>
+
+        {(capsule.voiceNote || (capsule.photos && capsule.photos.length > 0)) && (
+          <div className="flex items-center justify-center gap-2 mt-3">
+            {capsule.voiceNote && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#BA6E52]/10 border border-[#BA6E52]/20 text-[11px] font-mono text-[#964332]">
+                🎙️ Pesan Suara
+              </span>
+            )}
+            {capsule.photos && capsule.photos.length > 0 && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/70 border border-[#E5DACB] text-[11px] font-mono text-[#7A6F63]">
+                📷 {capsule.photos.length} Potret
+              </span>
+            )}
+          </div>
+        )}
       </motion.div>
 
       {/* The 3D Tactile Envelope Container */}

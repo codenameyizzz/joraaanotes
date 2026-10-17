@@ -48,7 +48,7 @@ export default function ShareModal({
   const activeUrl = showFullHash && fallbackUrl ? fallbackUrl : shareUrl;
 
   const whatsappMessage = encodeURIComponent(
-    `💌 Ada sepucuk surat & kenangan manis untukmu dari ${capsule.author || 'seseorang'}:\n"${capsule.title}"\n\nBuka segel amplopnya di sini:\n${activeUrl}`
+    `💌 Ada sepucuk surat${capsule.voiceNote ? ' & rekaman suara' : ''} untukmu dari ${capsule.author || 'seseorang'}:\n"${capsule.title}"\n\nBuka segel amplopnya di sini:\n${activeUrl}`
   );
 
   return (
@@ -118,11 +118,18 @@ export default function ShareModal({
               Dari: <span className="font-medium text-[#2B2520]">{capsule.author || 'Anonim'}</span> • Untuk:{' '}
               <span className="font-medium text-[#2B2520]">{capsule.recipient || 'Untukmu'}</span>
             </p>
-            {capsule.photos && capsule.photos.length > 0 && (
-              <span className="inline-block mt-2 text-[10px] font-mono text-[#8C7F70] bg-[#F5EDE1] px-2 py-0.5 rounded-full">
-                📷 {capsule.photos.length} Potret Polaroid Terlampir
-              </span>
-            )}
+            <div className="flex flex-wrap items-center gap-1.5 mt-2">
+              {capsule.voiceNote && (
+                <span className="inline-block text-[10px] font-mono text-[#964332] bg-[#FDF0ED] border border-[#F5C7BE] px-2 py-0.5 rounded-full font-medium">
+                  🎙️ Pesan Suara Terlampir
+                </span>
+              )}
+              {capsule.photos && capsule.photos.length > 0 && (
+                <span className="inline-block text-[10px] font-mono text-[#8C7F70] bg-[#F5EDE1] px-2 py-0.5 rounded-full">
+                  📷 {capsule.photos.length} Potret Polaroid
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Share Link Input Box */}

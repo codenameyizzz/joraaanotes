@@ -234,6 +234,22 @@ class SoundSystem {
     }
   }
 
+  pauseClairDeLune() {
+    if (this.clairDeLuneAudio && this.isMusicPlaying) {
+      try {
+        this.clairDeLuneAudio.pause();
+      } catch {}
+    }
+  }
+
+  resumeClairDeLune() {
+    if (this.clairDeLuneAudio && this.isMusicPlaying) {
+      try {
+        this.clairDeLuneAudio.play().catch(() => {});
+      } catch {}
+    }
+  }
+
   toggleClairDeLune(): boolean {
     if (this.isMusicPlaying) {
       this.stopClairDeLune();

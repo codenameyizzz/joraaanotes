@@ -23,11 +23,12 @@ import {
   Loader2,
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
-import { CapsuleData, PhotoItem, SealIconType, ThemeId, THEMES } from '@/lib/types';
+import { CapsuleData, PhotoItem, SealIconType, ThemeId, VoiceNoteData, THEMES } from '@/lib/types';
 import { compressImage, encodeCapsule, getLocalVault, saveToLocalVault } from '@/lib/storage';
 import { sounds } from '@/lib/audio';
 import WaxSeal from '@/components/WaxSeal';
 import PolaroidCard from '@/components/PolaroidCard';
+import VoiceNoteRecorder from '@/components/VoiceNoteRecorder';
 import ShareModal from '@/components/ShareModal';
 import EnvelopeView from '@/components/EnvelopeView';
 import LetterReader from '@/components/LetterReader';
@@ -46,6 +47,7 @@ export default function HomePage() {
   const [selectedSeal, setSelectedSeal] = useState<SealIconType>('heart');
   const [musicMood, setMusicMood] = useState<'lofi-rain' | 'soft-piano' | 'gentle-chimes' | 'none'>('lofi-rain');
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
+  const [voiceNote, setVoiceNote] = useState<VoiceNoteData | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
 
   // Modals & Navigation state
@@ -145,6 +147,7 @@ export default function HomePage() {
       sealIcon: selectedSeal,
       musicMood,
       photos,
+      voiceNote: voiceNote || undefined,
       reactions: { hugs: 0, smiles: 0, flowers: 0, coffee: 0 },
       createdAt: Date.now(),
     };
@@ -489,6 +492,15 @@ export default function HomePage() {
                 </p>
               </div>
             )}
+          </div>
+
+          {/* Voice Note Recorder Section */}
+          <div className="mb-10 pt-6 border-t border-[#ECE2D2]">
+            <VoiceNoteRecorder
+              value={voiceNote}
+              onChange={setVoiceNote}
+              maxDurationSeconds={60}
+            />
           </div>
 
           {/* Aesthetics Customizer: Themes, Seals & Music */}

@@ -17,6 +17,7 @@ import {
 import Link from 'next/link';
 import { CapsuleData, THEMES } from '@/lib/types';
 import PolaroidCard from './PolaroidCard';
+import VoiceNotePlayer from './VoiceNotePlayer';
 import { sounds } from '@/lib/audio';
 
 interface LetterReaderProps {
@@ -186,6 +187,15 @@ export default function LetterReader({
           <div className="space-y-5 text-[#332C26] text-base sm:text-lg leading-relaxed font-sans font-normal whitespace-pre-line border-l-2 border-[#E8DEC8] pl-5 my-8">
             {capsule.message}
           </div>
+
+          {/* Voice Note Section (if attached) */}
+          {capsule.voiceNote && (
+            <VoiceNotePlayer
+              voiceNote={capsule.voiceNote}
+              authorName={capsule.author}
+              themeColor={theme.accentColor}
+            />
+          )}
 
           {/* Photos Section (if any attached) */}
           {capsule.photos && capsule.photos.length > 0 && (

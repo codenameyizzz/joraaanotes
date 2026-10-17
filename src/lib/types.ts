@@ -10,6 +10,12 @@ export interface PhotoItem {
   washiTapeColor?: string;
 }
 
+export interface VoiceNoteData {
+  url: string; // base64 audio data URL or hosted blob URL
+  duration: number; // in seconds
+  fileName?: string;
+}
+
 export interface CapsuleData {
   id: string;
   title: string;
@@ -22,6 +28,7 @@ export interface CapsuleData {
   sealIcon: SealIconType;
   musicMood: 'lofi-rain' | 'soft-piano' | 'gentle-chimes' | 'none';
   photos: PhotoItem[];
+  voiceNote?: VoiceNoteData;
   reactions?: {
     hugs: number;
     smiles: number;
