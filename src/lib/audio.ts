@@ -6,6 +6,10 @@ class SoundSystem {
   private isAmbientPlaying: boolean = false;
   private clairDeLuneAudio: HTMLAudioElement | null = null;
   private isMusicPlaying: boolean = false;
+  private isDucked: boolean = false;
+  private normalVolume: number = 0.30;
+  private duckedVolume: number = 0.08;
+  private fadeInterval: ReturnType<typeof setInterval> | null = null;
 
   private getContext(): AudioContext | null {
     if (typeof window === 'undefined') return null;
@@ -166,6 +170,8 @@ class SoundSystem {
   playClairDeLune(): boolean {
     if (typeof window === 'undefined') return false;
 
+    const targetVol = this.isDucked ? this.duckedVolume : this.normalVolume;
+
     if (!this.clairDeLuneAudio) {
       const audio = new Audio();
       audio.preload = 'auto';
@@ -182,20 +188,22 @@ class SoundSystem {
         }
       };
 
-      audio.volume = 0.45;
+      audio.volume = targetVol;
 
       // Seamless 30-second loop with smooth volume cross-fade
       audio.addEventListener('timeupdate', () => {
+        const currentTarget = this.isDucked ? this.duckedVolume : this.normalVolume;
+
         // Soft fade out in the last 2.5 seconds (27.5s - 30s)
         if (audio.currentTime >= 27.5 && audio.currentTime < 30.0) {
           const progress = (30.0 - audio.currentTime) / 2.5;
-          audio.volume = Math.max(0.03, 0.45 * progress);
+          audio.volume = Math.max(0.02, currentTarget * progress);
         }
 
         // Loop back to 0.0 at 30 seconds
         if (audio.currentTime >= 30.0) {
           audio.currentTime = 0;
-          audio.volume = 0.45;
+          audio.volume = currentTarget;
           audio.play().catch(() => {});
         }
       });
@@ -205,7 +213,7 @@ class SoundSystem {
 
     try {
       this.clairDeLuneAudio.currentTime = 0;
-      this.clairDeLuneAudio.volume = 0.45;
+      this.clairDeLuneAudio.volume = targetVol;
       const playPromise = this.clairDeLuneAudio.play();
       if (playPromise) {
         playPromise
@@ -225,29 +233,76 @@ class SoundSystem {
   }
 
   stopClairDeLune() {
+    if (this.fadeInterval) {
+      clearInterval(this.fadeInterval);
+      this.fadeInterval = null;
+    }
     if (this.clairDeLuneAudio) {
       try {
         this.clairDeLuneAudio.pause();
         this.clairDeLuneAudio.currentTime = 0;
       } catch {}
       this.isMusicPlaying = false;
+      this.isDucked = false;
     }
+  }
+
+  // Audio Ducking: Softly lower music volume when voice note plays so music becomes gentle background atmosphere
+  duckClairDeLune() {
+    this.isDucked = true;
+    if (this.clairDeLuneAudio) {
+      if (this.isMusicPlaying && !this.clairDeLuneAudio.paused) {
+        this.fadeVolume(this.duckedVolume, 400);
+      } else if (this.isMusicPlaying) {
+        this.clairDeLuneAudio.volume = this.duckedVolume;
+        this.clairDeLuneAudio.play().catch(() => {});
+      }
+    }
+  }
+
+  // Restore music volume to normal ambient level when voice note stops/pauses
+  unduckClairDeLune() {
+    this.isDucked = false;
+    if (this.clairDeLuneAudio && this.isMusicPlaying && !this.clairDeLuneAudio.paused) {
+      this.fadeVolume(this.normalVolume, 500);
+    }
+  }
+
+  // Smooth volume interpolation helper
+  private fadeVolume(targetVol: number, durationMs: number = 400) {
+    if (!this.clairDeLuneAudio || typeof window === 'undefined') return;
+    if (this.fadeInterval) {
+      clearInterval(this.fadeInterval);
+      this.fadeInterval = null;
+    }
+
+    const audio = this.clairDeLuneAudio;
+    const startVol = audio.volume;
+    const diff = targetVol - startVol;
+    const steps = 12;
+    const stepTime = durationMs / steps;
+    let currentStep = 0;
+
+    this.fadeInterval = setInterval(() => {
+      currentStep++;
+      if (currentStep >= steps) {
+        audio.volume = targetVol;
+        if (this.fadeInterval) {
+          clearInterval(this.fadeInterval);
+          this.fadeInterval = null;
+        }
+      } else {
+        audio.volume = Math.max(0, Math.min(1, startVol + diff * (currentStep / steps)));
+      }
+    }, stepTime);
   }
 
   pauseClairDeLune() {
-    if (this.clairDeLuneAudio && this.isMusicPlaying) {
-      try {
-        this.clairDeLuneAudio.pause();
-      } catch {}
-    }
+    this.duckClairDeLune();
   }
 
   resumeClairDeLune() {
-    if (this.clairDeLuneAudio && this.isMusicPlaying) {
-      try {
-        this.clairDeLuneAudio.play().catch(() => {});
-      } catch {}
-    }
+    this.unduckClairDeLune();
   }
 
   toggleClairDeLune(): boolean {

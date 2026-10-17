@@ -80,7 +80,7 @@ export default function VoiceNotePlayer({
     const onEnded = () => {
       setIsPlaying(false);
       setCurrentTime(0);
-      sounds.resumeClairDeLune();
+      sounds.unduckClairDeLune();
     };
 
     const onError = () => {
@@ -100,7 +100,7 @@ export default function VoiceNotePlayer({
       audio.removeEventListener('error', onError);
       audio.pause();
       stopWebAudio();
-      sounds.resumeClairDeLune();
+      sounds.unduckClairDeLune();
     };
   }, [voiceNote.url]);
 
@@ -139,7 +139,7 @@ export default function VoiceNotePlayer({
       ctx.resume().catch(() => { });
     }
 
-    sounds.pauseClairDeLune();
+    sounds.duckClairDeLune();
 
     const source = ctx.createBufferSource();
     source.buffer = buffer;
@@ -162,7 +162,7 @@ export default function VoiceNotePlayer({
         setIsPlaying(false);
         setCurrentTime(0);
         pausedAtRef.current = 0;
-        sounds.resumeClairDeLune();
+        sounds.unduckClairDeLune();
       }
     };
 
@@ -190,7 +190,7 @@ export default function VoiceNotePlayer({
       animationFrameRef.current = null;
     }
     setIsPlaying(false);
-    sounds.resumeClairDeLune();
+    sounds.unduckClairDeLune();
   };
 
   const stopWebAudio = () => {
@@ -221,10 +221,10 @@ export default function VoiceNotePlayer({
     if (isPlaying) {
       audio.pause();
       setIsPlaying(false);
-      sounds.resumeClairDeLune();
+      sounds.unduckClairDeLune();
     } else {
-      // Pause background music for crystal-clear voice clarity
-      sounds.pauseClairDeLune();
+      // Lower music softly so it acts as gentle background atmosphere
+      sounds.duckClairDeLune();
 
       try {
         await audio.play();
@@ -237,7 +237,7 @@ export default function VoiceNotePlayer({
           playWebAudio();
         } else {
           setIsPlaying(false);
-          sounds.resumeClairDeLune();
+          sounds.unduckClairDeLune();
         }
       }
     }
