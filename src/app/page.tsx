@@ -23,9 +23,19 @@ import {
   Loader2,
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
-import { CapsuleData, PhotoItem, SealIconType, ThemeId, VoiceNoteData, THEMES } from '@/lib/types';
+import {
+  CapsuleData,
+  PhotoItem,
+  SealIconType,
+  ThemeId,
+  VoiceNoteData,
+  BotanicalFlowerId,
+  GarlandBorderId,
+  THEMES,
+} from '@/lib/types';
 import { compressImage, encodeCapsule, getLocalVault, saveToLocalVault } from '@/lib/storage';
 import { sounds } from '@/lib/audio';
+import { BOTANICAL_FLOWERS, GARLAND_BORDERS, getBotanicalFlower, getGarlandBorder } from '@/lib/botanical';
 import WaxSeal from '@/components/WaxSeal';
 import PolaroidCard from '@/components/PolaroidCard';
 import VoiceNoteRecorder from '@/components/VoiceNoteRecorder';
@@ -44,7 +54,9 @@ export default function HomePage() {
     `Hai,\n\nKadang di tengah riuhnya hari, ada satu dua ingatan yang tiba-tiba singgah tanpa permisi. Dan seringkali, ingatan itu mengarah kepadamu.\n\nSurat ini kutulis tanpa alasan rumit. Hanya ingin memastikan bahwa kamu baik-baik saja hari ini, dan mengingatkanmu untuk bernapas lebih pelan di sela-sela lelahmu.\n\nSemoga hari esok menyambutmu dengan lebih hangat.`
   );
   const [selectedTheme, setSelectedTheme] = useState<ThemeId>('warm-paper');
-  const [selectedSeal, setSelectedSeal] = useState<SealIconType>('heart');
+  const [selectedSeal, setSelectedSeal] = useState<SealIconType>('lily');
+  const [selectedFlower, setSelectedFlower] = useState<BotanicalFlowerId>('pink-lily');
+  const [selectedGarland, setSelectedGarland] = useState<GarlandBorderId>('none');
   const [musicMood, setMusicMood] = useState<'lofi-rain' | 'soft-piano' | 'gentle-chimes' | 'none'>('lofi-rain');
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [voiceNote, setVoiceNote] = useState<VoiceNoteData | null>(null);
@@ -145,6 +157,8 @@ export default function HomePage() {
       locationWeather: locationWeather.trim(),
       theme: selectedTheme,
       sealIcon: selectedSeal,
+      flowerDecoration: selectedFlower,
+      garlandBorder: selectedGarland,
       musicMood,
       photos,
       voiceNote: voiceNote || undefined,
@@ -328,10 +342,36 @@ export default function HomePage() {
         </section>
 
         {/* The Writing Desk / Sheet */}
-        <div className={`relative rounded-2xl p-6 sm:p-10 ${currentThemeConfig.paperClass} border ${currentThemeConfig.cardBorder} shadow-[0_20px_50px_-15px_rgba(40,30,20,0.08),0_2px_4px_rgba(0,0,0,0.02)] transition-colors duration-300`}>
+        <div className={`relative rounded-2xl p-6 sm:p-10 ${currentThemeConfig.paperClass} border ${currentThemeConfig.cardBorder} shadow-[0_20px_50px_-15px_rgba(40,30,20,0.08),0_2px_4px_rgba(0,0,0,0.02)] transition-colors duration-300 overflow-hidden`}>
+          {/* Decorative Floral Garland Margin / Border (Live Preview) */}
+          {selectedGarland !== 'none' && getGarlandBorder(selectedGarland)?.image && (
+            <div className="absolute top-0 right-0 bottom-0 w-20 sm:w-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden rounded-r-2xl">
+              <img
+                src={getGarlandBorder(selectedGarland)!.image}
+                alt="Garland"
+                className="w-full h-full object-cover object-left"
+              />
+            </div>
+          )}
+
+          {/* Pinned Botanical Flower Sticker (Live Preview) */}
+          {selectedFlower !== 'none' && getBotanicalFlower(selectedFlower) && (
+            <div className="absolute top-3 right-3 sm:top-5 sm:right-6 z-20 pointer-events-none select-none">
+              <div
+                className="washi-tape-jagged absolute -top-2 left-1/2 -translate-x-1/2 w-8 h-3 opacity-80 z-25 shadow-xs"
+                style={{ backgroundColor: currentThemeConfig.washiDefault }}
+              />
+              <img
+                src={getBotanicalFlower(selectedFlower)!.image}
+                alt="Sticker"
+                className="w-14 h-14 sm:w-16 sm:h-16 object-contain rotate-6 drop-shadow-[0_4px_8px_rgba(0,0,0,0.15)]"
+              />
+            </div>
+          )}
+
           {/* Top Washi Tape Decoration */}
           <div
-            className="washi-tape-jagged absolute -top-3 left-1/2 -translate-x-1/2 w-32 h-6.5 pointer-events-none opacity-85 shadow-xs"
+            className="washi-tape-jagged absolute -top-3 left-1/2 -translate-x-1/2 w-32 h-6.5 pointer-events-none opacity-85 shadow-xs z-15"
             style={{ backgroundColor: currentThemeConfig.washiDefault }}
           />
 
@@ -545,15 +585,35 @@ export default function HomePage() {
               <label className="block text-[11px] font-mono uppercase tracking-wider text-[#918373] mb-2">
                 Pilih Ikon Segel Lilin (Wax Seal)
               </label>
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2.5">
                 {(
                   [
-                    { id: 'heart', label: 'Hati', icon: <Heart size={14} /> },
-                    { id: 'star', label: 'Bintang', icon: <Star size={14} /> },
-                    { id: 'flower', label: 'Bunga', icon: <Flower2 size={14} /> },
-                    { id: 'crescent', label: 'Bulan', icon: <Moon size={14} /> },
-                    { id: 'envelope', label: 'Surat', icon: <Mail size={14} /> },
-                    { id: 'sparkle', label: 'Kilau', icon: <Sparkles size={14} /> },
+                    {
+                      id: 'lily',
+                      label: 'Lily Pink',
+                      icon: <img src="/botanical/pink-lily.png" alt="Lily" className="w-3.5 h-3.5 object-contain" />,
+                    },
+                    {
+                      id: 'sunflower',
+                      label: 'Matahari',
+                      icon: <img src="/botanical/sunflower.png" alt="Sunflower" className="w-3.5 h-3.5 object-contain" />,
+                    },
+                    {
+                      id: 'rose',
+                      label: 'Mawar',
+                      icon: <img src="/botanical/pink-rose.png" alt="Rose" className="w-3.5 h-3.5 object-contain" />,
+                    },
+                    {
+                      id: 'hydrangea',
+                      label: 'Hydrangea',
+                      icon: <img src="/botanical/flower-blue-hydrangea.png" alt="Hydrangea" className="w-3.5 h-3.5 object-contain" />,
+                    },
+                    { id: 'heart', label: 'Hati', icon: <Heart size={13} /> },
+                    { id: 'star', label: 'Bintang', icon: <Star size={13} /> },
+                    { id: 'flower', label: 'Bunga', icon: <Flower2 size={13} /> },
+                    { id: 'crescent', label: 'Bulan', icon: <Moon size={13} /> },
+                    { id: 'envelope', label: 'Surat', icon: <Mail size={13} /> },
+                    { id: 'sparkle', label: 'Kilau', icon: <Sparkles size={13} /> },
                   ] as const
                 ).map((item) => (
                   <button
@@ -563,15 +623,135 @@ export default function HomePage() {
                       sounds.playSoftClick();
                       setSelectedSeal(item.id);
                     }}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-mono transition-all ${selectedSeal === item.id
-                      ? 'bg-[#26201B] text-white border-[#26201B] shadow-xs'
-                      : 'bg-[#F7F2E8] text-[#594E42] border-[#E3D6C3] hover:bg-white'
-                      }`}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-mono transition-all ${
+                      selectedSeal === item.id
+                        ? 'bg-[#26201B] text-white border-[#26201B] shadow-xs'
+                        : 'bg-[#F7F2E8] text-[#594E42] border-[#E3D6C3] hover:bg-white'
+                    }`}
                   >
                     {item.icon}
                     <span>{item.label}</span>
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Botanical Flower Sticker Picker */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-[11px] font-mono uppercase tracking-wider text-[#918373]">
+                  Hiasan Stiker Bunga Estetik (Botanical Cutouts)
+                </label>
+                <span className="text-[10px] font-mono text-[#A09383]">
+                  Disematkan di kertas surat & segel amplop
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    sounds.playSoftClick();
+                    setSelectedFlower('none');
+                  }}
+                  className={`flex items-center gap-2 p-2 rounded-xl border text-left transition-all ${
+                    selectedFlower === 'none'
+                      ? 'border-[#26201B] bg-white ring-1 ring-[#26201B] shadow-xs'
+                      : 'border-[#E5DACB] bg-[#F7F2E8] hover:bg-white'
+                  }`}
+                >
+                  <span className="text-sm">🚫</span>
+                  <div className="min-w-0">
+                    <p className="text-xs font-sans text-[#332A22] font-medium truncate">
+                      Tanpa Bunga
+                    </p>
+                    <p className="text-[10px] text-[#9E9080] truncate">Kertas polos</p>
+                  </div>
+                </button>
+
+                {BOTANICAL_FLOWERS.map((f) => {
+                  const isSelected = selectedFlower === f.id;
+                  return (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => {
+                        sounds.playSoftClick();
+                        setSelectedFlower(f.id);
+                      }}
+                      className={`flex items-center gap-2 p-2 rounded-xl border text-left transition-all group ${
+                        isSelected
+                          ? 'border-[#964332] bg-white ring-1 ring-[#964332] shadow-xs'
+                          : 'border-[#E5DACB] bg-[#F7F2E8] hover:bg-white'
+                      }`}
+                    >
+                      <img
+                        src={f.image}
+                        alt={f.name}
+                        className="w-8 h-8 object-contain shrink-0 group-hover:scale-110 transition-transform drop-shadow-xs"
+                      />
+                      <div className="min-w-0">
+                        <p className="text-xs font-sans text-[#332A22] font-medium truncate">
+                          {f.name}
+                        </p>
+                        <p className="text-[10px] text-[#9E9080] truncate">{f.tag}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Floral Garland Border Picker */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-[11px] font-mono uppercase tracking-wider text-[#918373]">
+                  Bingkai Garlands Bunga Kertas
+                </label>
+                <span className="text-[10px] font-mono text-[#A09383]">
+                  Untaian kelopak bunga di tepi lembar surat
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {GARLAND_BORDERS.map((g) => {
+                  const isSelected = selectedGarland === g.id;
+                  return (
+                    <button
+                      key={g.id}
+                      type="button"
+                      onClick={() => {
+                        sounds.playSoftClick();
+                        setSelectedGarland(g.id);
+                      }}
+                      className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition-all ${
+                        isSelected
+                          ? 'border-[#964332] bg-white ring-1 ring-[#964332] shadow-xs'
+                          : 'border-[#E5DACB] bg-[#F7F2E8] hover:bg-white'
+                      }`}
+                    >
+                      {g.image ? (
+                        <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-[#E5DACB] bg-[#FAF6EE]">
+                          <img
+                            src={g.image}
+                            alt={g.name}
+                            className="w-full h-full object-cover object-left mix-blend-multiply"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-[#EFE8DD] flex items-center justify-center text-sm shrink-0 text-[#8C7D6D]">
+                          📄
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-sans text-[#332A22] font-medium truncate">
+                          {g.name}
+                        </p>
+                        <p className="text-[10px] text-[#9E9080] line-clamp-1">
+                          {g.description}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

@@ -37,6 +37,38 @@ export default function WaxSeal({
   const renderIcon = () => {
     const props = { size: currentSize.iconSize, strokeWidth: 1.75, className: 'drop-shadow-[0_1px_1px_rgba(0,0,0,0.4)]' };
     switch (icon) {
+      case 'lily':
+        return (
+          <img
+            src="/botanical/pink-lily.png"
+            alt="Lily"
+            className="w-[85%] h-[85%] object-contain drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
+          />
+        );
+      case 'sunflower':
+        return (
+          <img
+            src="/botanical/sunflower.png"
+            alt="Sunflower"
+            className="w-[85%] h-[85%] object-contain drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
+          />
+        );
+      case 'rose':
+        return (
+          <img
+            src="/botanical/pink-rose.png"
+            alt="Rose"
+            className="w-[85%] h-[85%] object-contain drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
+          />
+        );
+      case 'hydrangea':
+        return (
+          <img
+            src="/botanical/flower-blue-hydrangea.png"
+            alt="Hydrangea"
+            className="w-[85%] h-[85%] object-contain drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
+          />
+        );
       case 'star':
         return <Star {...props} fill="currentColor" fillOpacity={0.3} />;
       case 'sparkle':

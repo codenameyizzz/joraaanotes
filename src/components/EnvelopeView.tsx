@@ -3,19 +3,43 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { MailOpen } from 'lucide-react';
+import { MailOpen, Sparkles } from 'lucide-react';
 import { CapsuleData, THEMES } from '@/lib/types';
 import WaxSeal from './WaxSeal';
 import { sounds } from '@/lib/audio';
+import { getBotanicalFlower } from '@/lib/botanical';
 
 interface EnvelopeViewProps {
   capsule: CapsuleData;
   onOpen: () => void;
 }
 
+const ambientPetals = [
+  { img: '/botanical/pink-lily.png', x: '8%', y: '14%', size: 52, rotate: 18, delay: 0 },
+  { img: '/botanical/sunflower.png', x: '86%', y: '16%', size: 46, rotate: -25, delay: 1.2 },
+  { img: '/botanical/flower-blue-hydrangea.png', x: '12%', y: '78%', size: 42, rotate: 40, delay: 2.4 },
+  { img: '/botanical/flower-gerbera.png', x: '88%', y: '75%', size: 48, rotate: -18, delay: 0.8 },
+  { img: '/botanical/pink-rose.png', x: '4%', y: '48%', size: 40, rotate: 28, delay: 3.1 },
+  { img: '/botanical/flower-anemone.png', x: '92%', y: '46%', size: 38, rotate: -35, delay: 1.6 },
+];
+
+const burstBlossoms = [
+  { img: '/botanical/pink-lily.png', x: -140, y: -220, rotate: -45, scale: 0.9 },
+  { img: '/botanical/sunflower.png', x: 150, y: -210, rotate: 55, scale: 0.85 },
+  { img: '/botanical/pink-rose.png', x: -190, y: -90, rotate: -70, scale: 0.8 },
+  { img: '/botanical/flower-gerbera.png', x: 200, y: -80, rotate: 60, scale: 0.8 },
+  { img: '/botanical/flower-blue-hydrangea.png', x: -80, y: -270, rotate: 25, scale: 0.75 },
+  { img: '/botanical/flower-anemone.png', x: 80, y: -260, rotate: -30, scale: 0.75 },
+  { img: '/botanical/flower-ranunculus.png', x: -210, y: 30, rotate: 80, scale: 0.7 },
+  { img: '/botanical/flower-pansy.png', x: 220, y: 40, rotate: -65, scale: 0.7 },
+];
+
 export default function EnvelopeView({ capsule, onOpen }: EnvelopeViewProps) {
   const [isOpening, setIsOpening] = useState(false);
   const theme = THEMES[capsule.theme] || THEMES['warm-paper'];
+
+  const chosenFlower = getBotanicalFlower(capsule.flowerDecoration);
+  const flowerTuckImage = chosenFlower ? chosenFlower.image : '/botanical/pink-rose.png';
 
   const handleSealClick = () => {
     if (isOpening) return;
@@ -24,10 +48,10 @@ export default function EnvelopeView({ capsule, onOpen }: EnvelopeViewProps) {
     // 1. Fire wax seal pop audio
     sounds.playWaxSealPop();
 
-    // 2. Whimsical Confetti Shower (gold, blush, matcha petals)
+    // 2. Confetti Shower
     confetti({
       particleCount: 55,
-      spread: 75,
+      spread: 80,
       origin: { y: 0.62 },
       colors: [theme.accentColor, '#F5DEB3', '#E6C280', '#BA6E52', '#EADFA8'],
       shapes: ['circle', 'square'],
@@ -47,7 +71,7 @@ export default function EnvelopeView({ capsule, onOpen }: EnvelopeViewProps) {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden select-none">
-      {/* Background ambient lighting glow with soft breathing */}
+      {/* Background ambient lighting glow */}
       <motion.div
         animate={{ scale: [1, 1.08, 1], opacity: [0.35, 0.45, 0.35] }}
         transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
@@ -61,6 +85,37 @@ export default function EnvelopeView({ capsule, onOpen }: EnvelopeViewProps) {
         style={{ backgroundColor: '#EADFA8' }}
       />
 
+      {/* Ambient Floating Botanical Petals in Background */}
+      {ambientPetals.map((petal, idx) => (
+        <motion.div
+          key={idx}
+          animate={{
+            y: [-10, 10, -10],
+            rotate: [petal.rotate - 8, petal.rotate + 8, petal.rotate - 8],
+            scale: [1, 1.04, 1],
+          }}
+          transition={{
+            duration: 6 + idx * 0.8,
+            repeat: Infinity,
+            ease: 'easeInOut',
+            delay: petal.delay,
+          }}
+          className="absolute pointer-events-none opacity-40 hover:opacity-80 transition-opacity filter drop-shadow-sm select-none z-5 hidden sm:block"
+          style={{
+            left: petal.x,
+            top: petal.y,
+            width: petal.size,
+            height: petal.size,
+          }}
+        >
+          <img
+            src={petal.img}
+            alt="Petal"
+            className="w-full h-full object-contain"
+          />
+        </motion.div>
+      ))}
+
       {/* Header Greeting */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -69,6 +124,7 @@ export default function EnvelopeView({ capsule, onOpen }: EnvelopeViewProps) {
         className="text-center mb-8 max-w-md z-10"
       >
         <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/60 border border-[#E5DACB] text-[12px] font-mono tracking-wider text-[#7A6F63] mb-3 backdrop-blur-xs shadow-xs">
+          <Sparkles size={12} className="text-[#BA6E52]" />
           <span>A letter for you</span>
         </div>
         <h1 className="font-serif text-3xl sm:text-4xl text-[#2B2520] tracking-tight">
@@ -79,11 +135,16 @@ export default function EnvelopeView({ capsule, onOpen }: EnvelopeViewProps) {
           <span className="font-semibold text-[#2B2520]">{capsule.author || 'Seseorang'}</span>
         </p>
 
-        {(capsule.voiceNote || (capsule.photos && capsule.photos.length > 0)) && (
-          <div className="flex items-center justify-center gap-2 mt-3">
+        {(capsule.voiceNote || (capsule.photos && capsule.photos.length > 0) || chosenFlower) && (
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
             {capsule.voiceNote && (
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#BA6E52]/10 border border-[#BA6E52]/20 text-[11px] font-mono text-[#964332]">
                 🎙️ Pesan Suara
+              </span>
+            )}
+            {chosenFlower && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#EAF2E4] border border-[#D0E2C8] text-[11px] font-mono text-[#446A3A]">
+                {chosenFlower.symbol} {chosenFlower.name}
               </span>
             )}
             {capsule.photos && capsule.photos.length > 0 && (
@@ -118,7 +179,7 @@ export default function EnvelopeView({ capsule, onOpen }: EnvelopeViewProps) {
           className="absolute inset-0 rounded-md overflow-hidden border border-[#D8CCBA]"
           style={{ backgroundColor: theme.envelopeColor }}
         >
-          {/* Inner Lining Pattern (visible when open) */}
+          {/* Inner Lining Pattern */}
           <div
             className="absolute inset-0 opacity-15"
             style={{
@@ -148,7 +209,14 @@ export default function EnvelopeView({ capsule, onOpen }: EnvelopeViewProps) {
             style={{ transformOrigin: 'bottom center' }}
             className="absolute left-4 right-4 top-3 bottom-3 bg-[#FAF8F5] rounded-xs p-4 shadow-xl border border-[#E8E0D2] flex flex-col items-center justify-center text-center z-15"
           >
-            <div className="w-12 h-1 bg-[#E8E0D2] rounded-full mb-3" />
+            {chosenFlower && (
+              <img
+                src={chosenFlower.image}
+                alt="Flower Accent"
+                className="w-8 h-8 object-contain mb-1 drop-shadow-xs"
+              />
+            )}
+            <div className="w-12 h-1 bg-[#E8E0D2] rounded-full mb-2" />
             <p className="font-serif text-lg text-[#2B2520] italic leading-snug line-clamp-2">
               &ldquo;{capsule.title}&rdquo;
             </p>
@@ -162,7 +230,7 @@ export default function EnvelopeView({ capsule, onOpen }: EnvelopeViewProps) {
                 transition={{ delay: 0.7, duration: 0.4 }}
                 className="mt-3 flex items-center gap-1.5 text-[11px] font-mono text-[#964332]"
               >
-                <span>Membuka surat...</span>
+                <span>Membuka surat & semerbak bunga...</span>
               </motion.div>
             )}
           </motion.div>
@@ -196,7 +264,7 @@ export default function EnvelopeView({ capsule, onOpen }: EnvelopeViewProps) {
           />
         </div>
 
-        {/* Envelope Top Flap (3D Unfold Upwards with Smooth Easing) */}
+        {/* Envelope Top Flap (3D Unfold Upwards) */}
         <motion.div
           animate={
             isOpening
@@ -224,6 +292,57 @@ export default function EnvelopeView({ capsule, onOpen }: EnvelopeViewProps) {
             }}
           />
         </motion.div>
+
+        {/* Real Botanical Flower Blossom Tucked Underneath the Wax Seal */}
+        <AnimatePresence>
+          {!isOpening && (
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 0.95 }}
+              exit={{
+                scale: 1.5,
+                opacity: 0,
+                y: -30,
+                filter: 'blur(3px)',
+                transition: { duration: 0.4 },
+              }}
+              className="absolute left-1/2 top-[47%] -translate-x-[62%] -translate-y-[62%] z-28 pointer-events-none select-none"
+            >
+              <img
+                src={flowerTuckImage}
+                alt="Tucked Botanical Flower"
+                className="w-16 h-16 sm:w-20 sm:h-20 object-contain -rotate-15 drop-shadow-[0_4px_8px_rgba(0,0,0,0.18)]"
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Burst of Blooming Botanical Petals when seal pops open */}
+        {isOpening && (
+          <div className="absolute left-1/2 top-[48%] -translate-x-1/2 -translate-y-1/2 z-35 pointer-events-none">
+            {burstBlossoms.map((b, i) => (
+              <motion.img
+                key={i}
+                src={b.img}
+                alt="Blooming Blossom"
+                initial={{ x: 0, y: 0, scale: 0.2, opacity: 1, rotate: 0 }}
+                animate={{
+                  x: b.x,
+                  y: b.y,
+                  scale: b.scale,
+                  opacity: [1, 1, 0],
+                  rotate: b.rotate,
+                }}
+                transition={{
+                  duration: 1.2,
+                  delay: i * 0.04,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+                className="absolute w-12 h-12 sm:w-14 sm:h-14 object-contain filter drop-shadow-md"
+              />
+            ))}
+          </div>
+        )}
 
         {/* The Wax Seal in the center of the envelope */}
         <AnimatePresence>

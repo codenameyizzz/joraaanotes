@@ -1,6 +1,32 @@
 export type ThemeId = 'warm-paper' | 'midnight-film' | 'rose-petal' | 'matcha-breeze' | 'vintage-sepia';
 
-export type SealIconType = 'heart' | 'star' | 'flower' | 'crescent' | 'envelope' | 'sparkle';
+export type SealIconType =
+  | 'heart'
+  | 'star'
+  | 'flower'
+  | 'lily'
+  | 'sunflower'
+  | 'rose'
+  | 'hydrangea'
+  | 'crescent'
+  | 'envelope'
+  | 'sparkle';
+
+export type BotanicalFlowerId =
+  | 'none'
+  | 'pink-lily'
+  | 'sunflower'
+  | 'pink-rose'
+  | 'bouquet-peony'
+  | 'bouquet-lily'
+  | 'wildflowers'
+  | 'flower-gerbera'
+  | 'flower-blue-hydrangea'
+  | 'flower-anemone'
+  | 'flower-ranunculus'
+  | 'flower-pansy';
+
+export type GarlandBorderId = 'none' | 'sakura-pearl' | 'tiger-lily' | 'tropical-lily';
 
 export interface PhotoItem {
   id: string;
@@ -26,6 +52,8 @@ export interface CapsuleData {
   locationWeather?: string;
   theme: ThemeId;
   sealIcon: SealIconType;
+  flowerDecoration?: BotanicalFlowerId;
+  garlandBorder?: GarlandBorderId;
   musicMood: 'lofi-rain' | 'soft-piano' | 'gentle-chimes' | 'none';
   photos: PhotoItem[];
   voiceNote?: VoiceNoteData;

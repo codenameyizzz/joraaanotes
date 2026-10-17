@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, Square, Play, Pause, Trash2, RotateCcw, UploadCloud, Radio, AlertCircle } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Mic, Square, Play, Pause, Trash2, RotateCcw, UploadCloud, Radio, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { VoiceNoteData } from '@/lib/types';
 import { sounds } from '@/lib/audio';
 
@@ -10,6 +10,47 @@ interface VoiceNoteRecorderProps {
   value: VoiceNoteData | null;
   onChange: (data: VoiceNoteData | null) => void;
   maxDurationSeconds?: number;
+}
+
+// Convert PCM Float32 audio samples to 16-bit Mono WAV Blob
+function encodeWavBlob(samples: Float32Array, sampleRate: number): Blob {
+  const buffer = new ArrayBuffer(44 + samples.length * 2);
+  const view = new DataView(buffer);
+
+  // Helper to write ASCII strings
+  const writeString = (offset: number, str: string) => {
+    for (let i = 0; i < str.length; i++) {
+      view.setUint8(offset + i, str.charCodeAt(i));
+    }
+  };
+
+  /* RIFF chunk descriptor */
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + samples.length * 2, true); // ChunkSize
+  writeString(8, 'WAVE');
+
+  /* "fmt " sub-chunk */
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true); // Subchunk1Size (16 for PCM)
+  view.setUint16(20, 1, true); // AudioFormat (1 = PCM linear)
+  view.setUint16(22, 1, true); // NumChannels (1 = Mono)
+  view.setUint32(24, sampleRate, true); // SampleRate
+  view.setUint32(28, sampleRate * 2, true); // ByteRate (SampleRate * NumChannels * BitsPerSample/8)
+  view.setUint16(32, 2, true); // BlockAlign (NumChannels * BitsPerSample/8)
+  view.setUint16(34, 16, true); // BitsPerSample (16 bits)
+
+  /* "data" sub-chunk */
+  writeString(36, 'data');
+  view.setUint32(40, samples.length * 2, true); // Subchunk2Size
+
+  // Write 16-bit PCM samples with soft limiter clipping
+  let offset = 44;
+  for (let i = 0; i < samples.length; i++, offset += 2) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+  }
+
+  return new Blob([buffer], { type: 'audio/wav' });
 }
 
 export default function VoiceNoteRecorder({
@@ -22,15 +63,22 @@ export default function VoiceNoteRecorder({
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [micVolumeLevel, setMicVolumeLevel] = useState(0);
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
+  // Web Audio Recording Refs
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const processorNodeRef = useRef<ScriptProcessorNode | null>(null);
+  const audioBuffersRef = useRef<Float32Array[]>([]);
+  const totalSamplesCountRef = useRef(0);
+
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const audioPreviewRef = useRef<HTMLAudioElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Format seconds to mm:ss
   const formatTime = (secs: number) => {
+    if (isNaN(secs) || secs < 0) return '0:00';
     const m = Math.floor(secs / 60);
     const s = Math.floor(secs % 60);
     return `${m}:${s < 10 ? '0' : ''}${s}`;
@@ -39,20 +87,43 @@ export default function VoiceNoteRecorder({
   // Clean up timer and streams on unmount
   useEffect(() => {
     return () => {
-      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-        mediaRecorderRef.current.stop();
-      }
+      cleanupRecording();
       if (audioPreviewRef.current) {
         audioPreviewRef.current.pause();
       }
     };
   }, []);
 
+  const cleanupRecording = () => {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    if (processorNodeRef.current) {
+      try {
+        processorNodeRef.current.disconnect();
+      } catch {}
+      processorNodeRef.current = null;
+    }
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      mediaStreamRef.current = null;
+    }
+    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+      try {
+        audioContextRef.current.close();
+      } catch {}
+      audioContextRef.current = null;
+    }
+  };
+
   // Update preview audio playback time
   useEffect(() => {
     const audio = audioPreviewRef.current;
     if (!audio) return;
+
+    audio.volume = 1.0;
+    audio.muted = false;
 
     const onTimeUpdate = () => setCurrentTime(audio.currentTime);
     const onEnded = () => {
@@ -69,17 +140,21 @@ export default function VoiceNoteRecorder({
     };
   }, [value]);
 
-  // Start Voice Recording
+  // Start Voice Recording with Web Audio API (Universal WAV Format)
   const startRecording = async () => {
     setErrorMsg(null);
     sounds.playSoftClick();
 
     if (typeof window === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
-      setErrorMsg('Browser Anda tidak mendukung perekaman mikrofon langsung.');
+      setErrorMsg('Browser Anda tidak mendukung perekaman mikrofon langsung. Silakan gunakan tombol Unggah Audio.');
       return;
     }
 
     try {
+      cleanupRecording();
+      audioBuffersRef.current = [];
+      totalSamplesCountRef.current = 0;
+
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -87,58 +162,48 @@ export default function VoiceNoteRecorder({
           autoGainControl: true,
         },
       });
+      mediaStreamRef.current = stream;
 
-      // Find best supported format for compact speech
-      let mimeType = '';
-      if (typeof MediaRecorder !== 'undefined') {
-        if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
-          mimeType = 'audio/webm;codecs=opus';
-        } else if (MediaRecorder.isTypeSupported('audio/webm')) {
-          mimeType = 'audio/webm';
-        } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
-          mimeType = 'audio/mp4';
-        }
+      // Use 16,000 Hz or standard sampleRate for speech
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const audioCtx = new AudioCtx({ sampleRate: 16000 });
+      audioContextRef.current = audioCtx;
+
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
       }
 
-      const options: MediaRecorderOptions = {
-        audioBitsPerSecond: 32000, // 32kbps for ultra-lightweight, crisp voice
-      };
-      if (mimeType) options.mimeType = mimeType;
+      const sourceNode = audioCtx.createMediaStreamSource(stream);
+      // ScriptProcessorNode with buffer size 2048, 1 input channel, 1 output channel
+      const processor = audioCtx.createScriptProcessor(2048, 1, 1);
+      processorNodeRef.current = processor;
 
-      const recorder = new MediaRecorder(stream, options);
-      mediaRecorderRef.current = recorder;
-      audioChunksRef.current = [];
+      processor.onaudioprocess = (e) => {
+        const inputData = e.inputBuffer.getChannelData(0);
+        // Clone input data
+        const copy = new Float32Array(inputData.length);
+        copy.set(inputData);
+        audioBuffersRef.current.push(copy);
+        totalSamplesCountRef.current += copy.length;
 
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
+        // Calculate peak amplitude for live visual soundwave
+        let sum = 0;
+        for (let i = 0; i < inputData.length; i += 16) {
+          sum += Math.abs(inputData[i]);
         }
+        const avg = sum / (inputData.length / 16);
+        setMicVolumeLevel(Math.min(1, avg * 4));
       };
 
-      recorder.onstop = async () => {
-        // Stop all microphone tracks to release mic light
-        stream.getTracks().forEach((track) => track.stop());
+      sourceNode.connect(processor);
+      // Connect to destination through a zero-gain node to avoid feedback echo while keeping processor active
+      const silenceGain = audioCtx.createGain();
+      silenceGain.gain.setValueAtTime(0, audioCtx.currentTime);
+      processor.connect(silenceGain);
+      silenceGain.connect(audioCtx.destination);
 
-        const audioBlob = new Blob(audioChunksRef.current, {
-          type: mimeType || 'audio/webm',
-        });
-
-        // Convert blob to base64 Data URL
-        const reader = new FileReader();
-        reader.readAsDataURL(audioBlob);
-        reader.onloadend = () => {
-          const base64Audio = reader.result as string;
-          // Calculate final recorded duration
-          const finalDuration = Math.max(1, recordingSeconds);
-          onChange({
-            url: base64Audio,
-            duration: finalDuration,
-            fileName: 'voice-note.webm',
-          });
-        };
-      };
-
-      recorder.start(250); // Slice data every 250ms
       setIsRecording(true);
       setRecordingSeconds(0);
 
@@ -155,43 +220,80 @@ export default function VoiceNoteRecorder({
       }, 250);
     } catch (err: unknown) {
       console.error('Microphone error:', err);
-      const isDenied = err instanceof Error && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError');
+      cleanupRecording();
+      const isDenied =
+        err instanceof Error &&
+        (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError');
       setErrorMsg(
         isDenied
-          ? 'Izin mikrofon ditolak. Anda juga bisa mengunggah file rekaman suara melalui tombol di bawah.'
-          : 'Gagal mengakses mikrofon. Pastikan mikrofon terhubung atau unggah file suara secara langsung.'
+          ? 'Izin mikrofon tidak diizinkan. Anda dapat mengunggah file rekaman suara melalui tombol di samping.'
+          : 'Gagal mengakses mikrofon. Pastikan mikrofon terpasang atau gunakan opsi Unggah Audio.'
       );
     }
   };
 
-  // Stop Recording
+  // Stop Recording and build lossless universal WAV
   const stopRecording = () => {
     sounds.playWaxSealPop();
+    const finalSeconds = Math.max(1, recordingSeconds);
+
     if (timerIntervalRef.current) {
       clearInterval(timerIntervalRef.current);
       timerIntervalRef.current = null;
     }
 
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      mediaRecorderRef.current.stop();
+    const audioCtx = audioContextRef.current;
+    const sampleRate = audioCtx ? audioCtx.sampleRate : 16000;
+
+    // Disconnect processor
+    if (processorNodeRef.current) {
+      try {
+        processorNodeRef.current.disconnect();
+      } catch {}
     }
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+    }
+
+    // Merge all recorded Float32 chunks
+    const totalSamples = totalSamplesCountRef.current;
+    if (totalSamples > 0 && audioBuffersRef.current.length > 0) {
+      const mergedSamples = new Float32Array(totalSamples);
+      let offset = 0;
+      for (const chunk of audioBuffersRef.current) {
+        mergedSamples.set(chunk, offset);
+        offset += chunk.length;
+      }
+
+      // Encode to 16-bit Mono WAV Blob (Universal support on iOS, Android, PC, WhatsApp)
+      const wavBlob = encodeWavBlob(mergedSamples, sampleRate);
+
+      const reader = new FileReader();
+      reader.readAsDataURL(wavBlob);
+      reader.onloadend = () => {
+        const base64Audio = reader.result as string;
+        onChange({
+          url: base64Audio,
+          duration: finalSeconds,
+          fileName: 'voice-note.wav',
+        });
+      };
+    }
+
+    cleanupRecording();
     setIsRecording(false);
+    setMicVolumeLevel(0);
   };
 
   // Cancel Recording
   const cancelRecording = () => {
     sounds.playSoftClick();
-    if (timerIntervalRef.current) {
-      clearInterval(timerIntervalRef.current);
-      timerIntervalRef.current = null;
-    }
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
-      mediaRecorderRef.current.stop();
-    }
-    audioChunksRef.current = [];
+    cleanupRecording();
+    audioBuffersRef.current = [];
+    totalSamplesCountRef.current = 0;
     setIsRecording(false);
     setRecordingSeconds(0);
+    setMicVolumeLevel(0);
   };
 
   // Delete Current Voice Note
@@ -211,24 +313,28 @@ export default function VoiceNoteRecorder({
     if (!value || !audioPreviewRef.current) return;
     sounds.playSoftClick();
 
+    const audio = audioPreviewRef.current;
+    audio.volume = 1.0;
+    audio.muted = false;
+
     if (isPlaying) {
-      audioPreviewRef.current.pause();
+      audio.pause();
       setIsPlaying(false);
     } else {
-      audioPreviewRef.current
+      audio
         .play()
         .then(() => setIsPlaying(true))
         .catch(() => setIsPlaying(false));
     }
   };
 
-  // Handle Audio File Upload Fallback
+  // Handle Audio File Upload Fallback (.mp3, .m4a, .wav)
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Ukuran file audio maksimal 5MB agar amplop tetap ringan.');
+    if (file.size > 8 * 1024 * 1024) {
+      alert('Ukuran file audio maksimal 8MB agar surat tetap ringan dan cepat dimuat.');
       return;
     }
 
@@ -239,7 +345,6 @@ export default function VoiceNoteRecorder({
     reader.readAsDataURL(file);
     reader.onload = (event) => {
       const dataUrl = event.target?.result as string;
-      // Get audio duration
       const tempAudio = new Audio(dataUrl);
       tempAudio.onloadedmetadata = () => {
         const dur = Math.round(tempAudio.duration) || 15;
@@ -270,18 +375,22 @@ export default function VoiceNoteRecorder({
             <Radio size={16} />
           </div>
           <div>
-            <h4 className="text-xs font-mono uppercase tracking-wider text-[#7A6C5D] font-semibold">
-              Pesan Suara (Voice Note)
+            <h4 className="text-xs font-mono uppercase tracking-wider text-[#7A6C5D] font-semibold flex items-center gap-1.5">
+              <span>Pesan Suara (Voice Note)</span>
+              <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#E4ECDE] text-[#416834] font-normal lowercase">
+                universal wav
+              </span>
             </h4>
             <p className="text-[11px] text-[#9E9080] font-sans">
-              Kirimkan bisikan suara hangatmu yang tersimpan di dalam amplop.
+              Bisikan suara hangatmu yang terdengar jernih di iPhone & Android.
             </p>
           </div>
         </div>
 
         {value && !isRecording && (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#E8F0E4] text-[#4F7744] text-[10px] font-mono font-medium">
-            ✓ Suara Terlampir ({formatTime(value.duration)})
+            <CheckCircle2 size={11} />
+            <span>Suara Tersimpan ({formatTime(value.duration)})</span>
           </span>
         )}
       </div>
@@ -307,21 +416,20 @@ export default function VoiceNoteRecorder({
               <span className="relative inline-flex rounded-full h-3 w-3 bg-[#D64545]" />
             </span>
 
+            {/* Live Visualizer modulated by real mic volume */}
             <div className="flex items-center gap-1.5 h-6">
-              {[40, 75, 55, 90, 60, 100, 45, 80, 50, 95, 70, 40].map((h, i) => (
-                <motion.div
-                  key={i}
-                  animate={{ height: [`${h * 0.3}%`, `${h}%`, `${h * 0.4}%`] }}
-                  transition={{
-                    duration: 0.6 + (i % 3) * 0.2,
-                    repeat: Infinity,
-                    repeatType: 'reverse',
-                    ease: 'easeInOut',
-                  }}
-                  className="w-1 bg-[#D64545] rounded-full"
-                  style={{ height: `${h}%` }}
-                />
-              ))}
+              {[35, 75, 50, 90, 60, 100, 45, 80, 50, 95, 70, 40].map((h, i) => {
+                const dynamicHeight = Math.max(25, Math.min(100, h * (0.4 + micVolumeLevel * 0.9)));
+                return (
+                  <motion.div
+                    key={i}
+                    animate={{ height: `${dynamicHeight}%` }}
+                    transition={{ duration: 0.1 }}
+                    className="w-1 bg-[#D64545] rounded-full"
+                    style={{ height: `${dynamicHeight}%` }}
+                  />
+                );
+              })}
             </div>
 
             <span className="font-mono text-xs font-semibold text-[#D64545]">
@@ -359,7 +467,13 @@ export default function VoiceNoteRecorder({
           className="bg-white rounded-xl border border-[#DFCDBA] p-3.5 shadow-xs"
         >
           {/* Audio hidden element for preview */}
-          <audio ref={audioPreviewRef} src={value.url} preload="auto" />
+          <audio
+            ref={audioPreviewRef}
+            src={value.url}
+            preload="auto"
+            playsInline
+            webkit-playsinline="true"
+          />
 
           <div className="flex items-center gap-3">
             {/* Play/Pause Button */}
@@ -367,6 +481,7 @@ export default function VoiceNoteRecorder({
               type="button"
               onClick={togglePlayPreview}
               className="w-10 h-10 rounded-full bg-[#2B231D] text-white flex items-center justify-center shrink-0 hover:bg-[#3E332A] transition-all active:scale-95 shadow-sm"
+              aria-label={isPlaying ? 'Jeda Pratinjau' : 'Putar Pratinjau'}
             >
               {isPlaying ? <Pause size={15} fill="white" /> : <Play size={15} fill="white" className="ml-0.5" />}
             </button>
@@ -446,13 +561,13 @@ export default function VoiceNoteRecorder({
             className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white border border-[#DACDBA] text-xs font-mono text-[#6A5E50] hover:bg-[#FAF6EE] transition-all"
           >
             <UploadCloud size={14} />
-            <span>Unggah Audio (.mp3, .m4a)</span>
+            <span>Unggah Audio (.mp3, .m4a, .wav)</span>
           </button>
 
           <input
             ref={fileInputRef}
             type="file"
-            accept="audio/*,.mp3,.m4a,.webm,.wav,.ogg"
+            accept="audio/*,.mp3,.m4a,.wav,.ogg,.aac"
             onChange={handleFileUpload}
             className="hidden"
           />
