@@ -493,19 +493,19 @@ export default function HomePage() {
         {/* TAB 2: WRITING DESK EDITOR */}
         {editorTab === 'write' && (
           <div className={`relative rounded-2xl p-6 sm:p-10 ${currentThemeConfig.paperClass} border ${currentThemeConfig.cardBorder} shadow-[0_20px_50px_-15px_rgba(40,30,20,0.08),0_2px_4px_rgba(0,0,0,0.02)] transition-colors duration-300 overflow-hidden`}>
-            {/* Live Floral Garland Margin Preview */}
+            {/* Live Floral Garland Margin Preview (Soft watercolor-like subtle accent) */}
             {selectedGarland !== 'none' && chosenGarlandConfig?.image && (
               <>
                 {chosenGarlandConfig.type === 'corners' ? (
                   <>
-                    <div className="absolute top-0 left-0 w-24 sm:w-32 h-24 sm:h-32 pointer-events-none opacity-85 z-5 select-none overflow-hidden rounded-tl-2xl">
+                    <div className="absolute top-0 left-0 w-20 sm:w-28 h-20 sm:h-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden rounded-tl-2xl">
                       <img
                         src={chosenGarlandConfig.image}
                         alt="Garland Corner"
                         className="w-full h-full object-contain"
                       />
                     </div>
-                    <div className="absolute bottom-0 right-0 w-24 sm:w-32 h-24 sm:h-32 pointer-events-none opacity-85 z-5 select-none overflow-hidden rounded-br-2xl rotate-180">
+                    <div className="absolute bottom-0 right-0 w-20 sm:w-28 h-20 sm:h-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden rounded-br-2xl rotate-180">
                       <img
                         src={chosenGarlandConfig.image}
                         alt="Garland Corner"
@@ -516,7 +516,7 @@ export default function HomePage() {
                 ) : (
                   <>
                     {(garlandPosition === 'right' || garlandPosition === 'both') && (
-                      <div className="absolute top-0 right-0 bottom-0 w-24 sm:w-36 pointer-events-none opacity-85 mix-blend-multiply z-5 select-none overflow-hidden rounded-r-2xl">
+                      <div className="absolute top-0 right-0 bottom-0 w-20 sm:w-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden rounded-r-2xl">
                         <img
                           src={chosenGarlandConfig.image}
                           alt="Garland"
@@ -525,7 +525,7 @@ export default function HomePage() {
                       </div>
                     )}
                     {(garlandPosition === 'left' || garlandPosition === 'both') && (
-                      <div className="absolute top-0 left-0 bottom-0 w-24 sm:w-36 pointer-events-none opacity-85 mix-blend-multiply z-5 select-none overflow-hidden rounded-l-2xl">
+                      <div className="absolute top-0 left-0 bottom-0 w-20 sm:w-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden rounded-l-2xl">
                         <img
                           src={chosenGarlandConfig.image}
                           alt="Garland"

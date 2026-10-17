@@ -254,19 +254,19 @@ export default function LetterReader({
           ref={letterPaperRef}
           className={`relative rounded-xs p-7 sm:p-12 ${theme.paperClass} border ${theme.cardBorder} shadow-[0_20px_60px_-15px_rgba(40,30,20,0.1),0_2px_6px_rgba(0,0,0,0.03)] overflow-hidden`}
         >
-          {/* Decorative Floral Garland Margin / Border (Right side or Both) */}
+          {/* Decorative Floral Garland Margin / Border (Soft watercolor-like subtle accent) */}
           {chosenGarland && chosenGarland.image && (
             <>
               {chosenGarland.type === 'corners' ? (
                 <>
-                  <div className="absolute top-0 left-0 w-28 sm:w-36 h-28 sm:h-36 pointer-events-none opacity-85 z-5 select-none overflow-hidden">
+                  <div className="absolute top-0 left-0 w-20 sm:w-28 h-20 sm:h-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden">
                     <img
                       src={chosenGarland.image}
                       alt={chosenGarland.name}
                       className="w-full h-full object-contain"
                     />
                   </div>
-                  <div className="absolute bottom-0 right-0 w-28 sm:w-36 h-28 sm:h-36 pointer-events-none opacity-85 z-5 select-none overflow-hidden rotate-180">
+                  <div className="absolute bottom-0 right-0 w-20 sm:w-28 h-20 sm:h-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden rotate-180">
                     <img
                       src={chosenGarland.image}
                       alt={chosenGarland.name}
@@ -277,7 +277,7 @@ export default function LetterReader({
               ) : (
                 <>
                   {(garlandPos === 'right' || garlandPos === 'both') && (
-                    <div className="absolute top-0 right-0 bottom-0 w-24 sm:w-36 pointer-events-none opacity-85 mix-blend-multiply z-5 select-none overflow-hidden">
+                    <div className="absolute top-0 right-0 bottom-0 w-20 sm:w-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden">
                       <img
                         src={chosenGarland.image}
                         alt={chosenGarland.name}
@@ -286,7 +286,7 @@ export default function LetterReader({
                     </div>
                   )}
                   {(garlandPos === 'left' || garlandPos === 'both') && (
-                    <div className="absolute top-0 left-0 bottom-0 w-24 sm:w-36 pointer-events-none opacity-85 mix-blend-multiply z-5 select-none overflow-hidden">
+                    <div className="absolute top-0 left-0 bottom-0 w-20 sm:w-28 pointer-events-none opacity-40 mix-blend-multiply z-5 select-none overflow-hidden">
                       <img
                         src={chosenGarland.image}
                         alt={chosenGarland.name}
