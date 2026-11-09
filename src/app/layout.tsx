@@ -26,7 +26,7 @@ const spaceMono = Space_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://joraaanotes.vercel.app"),
-  title: "Joraaa Notes — Aesthetic Digital Keepsake & Letters",
+  title: "Joraaa Notes - Aesthetic Digital Keepsake & Letters",
   description: "Kirim sepucuk surat, potret polaroid, dan catatan estetik dalam amplop kenangan digital.",
   icons: {
     icon: [

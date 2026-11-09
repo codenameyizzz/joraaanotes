@@ -1,10 +1,60 @@
-// Pure Web Audio API Sound Effects + Clair de Lune Classical Music Engine
+// Pure Web Audio API Sound Effects + Background Music Engine (Clair de Lune & Happy Birthday)
+import { MusicMoodId } from './types';
+
+export interface MusicTrackOption {
+  id: MusicMoodId;
+  name: string;
+  artist?: string;
+  description: string;
+  durationLabel: string;
+  src?: string;
+  fallbackSrc?: string;
+}
+
+export const MUSIC_TRACKS: MusicTrackOption[] = [
+  {
+    id: 'clair-de-lune',
+    name: 'Clair de Lune',
+    artist: 'Claude Debussy',
+    description: 'Melodi piano klasik lembut, puitis & menenangkan',
+    durationLabel: '30s Loop',
+    src: '/audio/clair-de-lune.mp3',
+    fallbackSrc: '/audio/clair-de-lune.ogg',
+  },
+  {
+    id: 'happy-birthday',
+    name: 'Happy Birthday',
+    artist: 'Birthday Melody',
+    description: 'Melodi hangat ceria untuk ucapan & momen ulang tahun',
+    durationLabel: 'Full Loop',
+    src: '/audio/happy-birthday.mp3',
+  },
+  {
+    id: 'none',
+    name: 'Tanpa Musik',
+    description: 'Suasana hening dan tenang tanpa alunan melodi latar',
+    durationLabel: 'Hening',
+  },
+];
+
+export function normalizeMusicMood(id?: string): MusicMoodId {
+  if (!id || id === 'none') return 'none';
+  if (id === 'happy-birthday') return 'happy-birthday';
+  return 'clair-de-lune';
+}
+
+export function getMusicTrack(id?: string): MusicTrackOption {
+  const normalized = normalizeMusicMood(id);
+  return MUSIC_TRACKS.find((m) => m.id === normalized) || MUSIC_TRACKS[0];
+}
 
 class SoundSystem {
   private ctx: AudioContext | null = null;
   private ambientNode: AudioNode | null = null;
   private isAmbientPlaying: boolean = false;
-  private clairDeLuneAudio: HTMLAudioElement | null = null;
+  private musicAudios: Map<string, HTMLAudioElement> = new Map();
+  private activeAudio: HTMLAudioElement | null = null;
+  private currentTrackId: MusicMoodId = 'clair-de-lune';
   private isMusicPlaying: boolean = false;
   private isDucked: boolean = false;
   private normalVolume: number = 0.30;
@@ -166,17 +216,21 @@ class SoundSystem {
     } catch {}
   }
 
-  // Clair de Lune by Claude Debussy (30-second seamless loop)
-  playClairDeLune(): boolean {
-    if (typeof window === 'undefined') return false;
+  private getAudioForTrack(trackId: MusicMoodId): HTMLAudioElement | null {
+    if (typeof window === 'undefined' || trackId === 'none') return null;
 
-    const targetVol = this.isDucked ? this.duckedVolume : this.normalVolume;
+    if (this.musicAudios.has(trackId)) {
+      return this.musicAudios.get(trackId)!;
+    }
 
-    if (!this.clairDeLuneAudio) {
-      const audio = new Audio();
-      audio.preload = 'auto';
+    const audio = new Audio();
+    audio.preload = 'auto';
 
-      // Prefer .mp3 if user provided it, fallback to .ogg
+    if (trackId === 'happy-birthday') {
+      audio.src = '/audio/happy-birthday.mp3';
+      audio.loop = true;
+    } else {
+      // clair-de-lune (default for all classical/legacy IDs)
       audio.src = '/audio/clair-de-lune.mp3';
 
       audio.onerror = () => {
@@ -184,11 +238,11 @@ class SoundSystem {
         if (audio.src.endsWith('.mp3')) {
           audio.src = '/audio/clair-de-lune.ogg';
           audio.load();
-          audio.play().catch(() => {});
+          if (this.isMusicPlaying && this.activeAudio === audio) {
+            audio.play().catch(() => {});
+          }
         }
       };
-
-      audio.volume = targetVol;
 
       // Seamless 30-second loop with smooth volume cross-fade
       audio.addEventListener('timeupdate', () => {
@@ -207,14 +261,41 @@ class SoundSystem {
           audio.play().catch(() => {});
         }
       });
-
-      this.clairDeLuneAudio = audio;
     }
 
+    this.musicAudios.set(trackId, audio);
+    return audio;
+  }
+
+  // Play background music (Clair de Lune or Happy Birthday)
+  playMusic(trackId?: string): boolean {
+    if (typeof window === 'undefined') return false;
+
+    const targetId = normalizeMusicMood(trackId || this.currentTrackId);
+    if (targetId === 'none') {
+      this.stopMusic();
+      return false;
+    }
+
+    // If another track was playing, pause and reset it
+    if (this.activeAudio && this.currentTrackId !== targetId) {
+      try {
+        this.activeAudio.pause();
+        this.activeAudio.currentTime = 0;
+      } catch {}
+    }
+
+    this.currentTrackId = targetId;
+    const audio = this.getAudioForTrack(targetId);
+    if (!audio) return false;
+
+    this.activeAudio = audio;
+    const targetVol = this.isDucked ? this.duckedVolume : this.normalVolume;
+
     try {
-      this.clairDeLuneAudio.currentTime = 0;
-      this.clairDeLuneAudio.volume = targetVol;
-      const playPromise = this.clairDeLuneAudio.play();
+      audio.currentTime = 0;
+      audio.volume = targetVol;
+      const playPromise = audio.play();
       if (playPromise) {
         playPromise
           .then(() => {
@@ -232,51 +313,51 @@ class SoundSystem {
     }
   }
 
-  stopClairDeLune() {
+  stopMusic() {
     if (this.fadeInterval) {
       clearInterval(this.fadeInterval);
       this.fadeInterval = null;
     }
-    if (this.clairDeLuneAudio) {
+    if (this.activeAudio) {
       try {
-        this.clairDeLuneAudio.pause();
-        this.clairDeLuneAudio.currentTime = 0;
+        this.activeAudio.pause();
+        this.activeAudio.currentTime = 0;
       } catch {}
-      this.isMusicPlaying = false;
-      this.isDucked = false;
     }
+    this.isMusicPlaying = false;
+    this.isDucked = false;
   }
 
   // Audio Ducking: Softly lower music volume when voice note plays so music becomes gentle background atmosphere
-  duckClairDeLune() {
+  duckMusic() {
     this.isDucked = true;
-    if (this.clairDeLuneAudio) {
-      if (this.isMusicPlaying && !this.clairDeLuneAudio.paused) {
+    if (this.activeAudio) {
+      if (this.isMusicPlaying && !this.activeAudio.paused) {
         this.fadeVolume(this.duckedVolume, 400);
       } else if (this.isMusicPlaying) {
-        this.clairDeLuneAudio.volume = this.duckedVolume;
-        this.clairDeLuneAudio.play().catch(() => {});
+        this.activeAudio.volume = this.duckedVolume;
+        this.activeAudio.play().catch(() => {});
       }
     }
   }
 
   // Restore music volume to normal ambient level when voice note stops/pauses
-  unduckClairDeLune() {
+  unduckMusic() {
     this.isDucked = false;
-    if (this.clairDeLuneAudio && this.isMusicPlaying && !this.clairDeLuneAudio.paused) {
+    if (this.activeAudio && this.isMusicPlaying && !this.activeAudio.paused) {
       this.fadeVolume(this.normalVolume, 500);
     }
   }
 
   // Smooth volume interpolation helper
   private fadeVolume(targetVol: number, durationMs: number = 400) {
-    if (!this.clairDeLuneAudio || typeof window === 'undefined') return;
+    if (!this.activeAudio || typeof window === 'undefined') return;
     if (this.fadeInterval) {
       clearInterval(this.fadeInterval);
       this.fadeInterval = null;
     }
 
-    const audio = this.clairDeLuneAudio;
+    const audio = this.activeAudio;
     const startVol = audio.volume;
     const diff = targetVol - startVol;
     const steps = 12;
@@ -297,20 +378,21 @@ class SoundSystem {
     }, stepTime);
   }
 
-  pauseClairDeLune() {
-    this.duckClairDeLune();
+  pauseMusic() {
+    this.duckMusic();
   }
 
-  resumeClairDeLune() {
-    this.unduckClairDeLune();
+  resumeMusic() {
+    this.unduckMusic();
   }
 
-  toggleClairDeLune(): boolean {
-    if (this.isMusicPlaying) {
-      this.stopClairDeLune();
+  toggleMusic(trackId?: string): boolean {
+    const targetId = normalizeMusicMood(trackId || this.currentTrackId);
+    if (this.isMusicPlaying && this.currentTrackId === targetId) {
+      this.stopMusic();
       return false;
     } else {
-      return this.playClairDeLune();
+      return this.playMusic(targetId);
     }
   }
 
@@ -318,10 +400,41 @@ class SoundSystem {
     return this.isMusicPlaying;
   }
 
-  // Ambient Rain / Noise Generator (Fallback)
-  toggleAmbientSound(mode: 'lofi-rain' | 'soft-piano' | 'gentle-chimes' | 'none'): boolean {
-    // If Clair de Lune is requested or default, prioritize Clair de Lune
-    return this.toggleClairDeLune();
+  getCurrentTrack(): MusicMoodId {
+    return this.currentTrackId;
+  }
+
+  // Backward-compatibility aliases
+  playClairDeLune(): boolean {
+    return this.playMusic('clair-de-lune');
+  }
+
+  stopClairDeLune() {
+    this.stopMusic();
+  }
+
+  duckClairDeLune() {
+    this.duckMusic();
+  }
+
+  unduckClairDeLune() {
+    this.unduckMusic();
+  }
+
+  pauseClairDeLune() {
+    this.duckMusic();
+  }
+
+  resumeClairDeLune() {
+    this.unduckMusic();
+  }
+
+  toggleClairDeLune(): boolean {
+    return this.toggleMusic('clair-de-lune');
+  }
+
+  toggleAmbientSound(mode: string): boolean {
+    return this.toggleMusic(mode);
   }
 
   getAmbientStatus(): boolean {

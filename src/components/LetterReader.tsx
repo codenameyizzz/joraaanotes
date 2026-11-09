@@ -20,7 +20,7 @@ import confetti from 'canvas-confetti';
 import { CapsuleData, THEMES } from '@/lib/types';
 import PolaroidCard from './PolaroidCard';
 import VoiceNotePlayer from './VoiceNotePlayer';
-import { sounds } from '@/lib/audio';
+import { sounds, getMusicTrack } from '@/lib/audio';
 import {
   getBotanicalFlower,
   getGarlandBorder,
@@ -69,20 +69,21 @@ export default function LetterReader({
   const garlandOffset = capsule.garlandOffset ?? 0;
   const garlandFlipH = capsule.garlandFlipH ?? false;
   const garlandFlipV = capsule.garlandFlipV ?? false;
+  const musicTrack = getMusicTrack(capsule.musicMood);
 
   useEffect(() => {
-    // Start Clair de Lune softly when letter opens
+    // Start music softly when letter opens
     if (capsule.musicMood !== 'none') {
-      const playing = sounds.playClairDeLune();
+      const playing = sounds.playMusic(capsule.musicMood);
       setIsAmbientOn(playing);
     }
     return () => {
-      sounds.stopClairDeLune();
+      sounds.stopMusic();
     };
   }, [capsule.musicMood]);
 
   const toggleAmbient = () => {
-    const newState = sounds.toggleClairDeLune();
+    const newState = sounds.toggleMusic(capsule.musicMood);
     setIsAmbientOn(newState);
   };
 
@@ -222,16 +223,16 @@ export default function LetterReader({
             <button
               type="button"
               onClick={toggleAmbient}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-xs font-serif transition-all shadow-xs ${isAmbientOn
+              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-xs font-serif transition-all shadow-xs cursor-pointer ${isAmbientOn
                 ? 'bg-[#2B2520] text-white border-[#2B2520]'
                 : 'bg-white/75 text-[#5C5044] border-[#E5DACB] hover:bg-white'
                 }`}
-              title="Clair de Lune — Claude Debussy (30 Detik)"
+              title={`${musicTrack.name}${musicTrack.artist ? ` — ${musicTrack.artist}` : ''}`}
             >
               {isAmbientOn ? (
                 <>
                   <Volume2 size={13} className="text-[#EADFA8] animate-pulse" />
-                  <span>Clair de Lune</span>
+                  <span>{musicTrack.name}</span>
                 </>
               ) : (
                 <>

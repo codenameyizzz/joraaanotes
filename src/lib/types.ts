@@ -62,6 +62,14 @@ export type EnvelopeStyle =
 
 export type OpenAnimationType = 'blossom-burst' | 'silky-glide' | 'wax-crack';
 
+export type MusicMoodId =
+  | 'clair-de-lune'
+  | 'happy-birthday'
+  | 'none'
+  | 'lofi-rain'
+  | 'soft-piano'
+  | 'gentle-chimes';
+
 export interface PhotoItem {
   id: string;
   url: string;
@@ -98,7 +106,7 @@ export interface CapsuleData {
   envelopeStyle?: EnvelopeStyle;
   openAnimation?: OpenAnimationType;
   signOffPrefix?: string;
-  musicMood: 'lofi-rain' | 'soft-piano' | 'gentle-chimes' | 'none';
+  musicMood: MusicMoodId;
   photos: PhotoItem[];
   voiceNote?: VoiceNoteData;
   reactions?: {

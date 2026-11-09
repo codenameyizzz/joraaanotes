@@ -25,6 +25,11 @@ import {
   Feather,
   Wind,
   Flame,
+  Music,
+  Cake,
+  Disc,
+  VolumeX,
+  Play,
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import {
@@ -40,10 +45,11 @@ import {
   GarlandPosition,
   EnvelopeStyle,
   OpenAnimationType,
+  MusicMoodId,
   THEMES,
 } from '@/lib/types';
 import { compressImage, encodeCapsule, getLocalVault, saveToLocalVault } from '@/lib/storage';
-import { sounds } from '@/lib/audio';
+import { sounds, MUSIC_TRACKS, getMusicTrack } from '@/lib/audio';
 import {
   BOTANICAL_FLOWERS,
   GARLAND_BORDERS,
@@ -98,7 +104,8 @@ export default function HomePage() {
   const [garlandFlipV, setGarlandFlipV] = useState<boolean>(false);
   const [envelopeStyle, setEnvelopeStyle] = useState<EnvelopeStyle>('classic-triangle');
   const [openAnimation, setOpenAnimation] = useState<OpenAnimationType>('blossom-burst');
-  const [musicMood, setMusicMood] = useState<'lofi-rain' | 'soft-piano' | 'gentle-chimes' | 'none'>('lofi-rain');
+  const [musicMood, setMusicMood] = useState<MusicMoodId>('clair-de-lune');
+  const [previewTrackId, setPreviewTrackId] = useState<MusicMoodId | null>(null);
 
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [voiceNote, setVoiceNote] = useState<VoiceNoteData | null>(null);
@@ -228,6 +235,11 @@ export default function HomePage() {
       return;
     }
 
+    if (previewTrackId) {
+      sounds.stopMusic();
+      setPreviewTrackId(null);
+    }
+
     setIsPublishing(true);
     sounds.playWaxSealPop();
 
@@ -273,6 +285,10 @@ export default function HomePage() {
 
   // Handle Open Envelope Test Preview
   const handleOpenPreview = () => {
+    if (previewTrackId) {
+      sounds.stopMusic();
+      setPreviewTrackId(null);
+    }
     sounds.playSoftClick();
     const capsule = buildCurrentCapsule();
     setActiveCapsule(capsule);
@@ -465,6 +481,10 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => {
+                if (previewTrackId) {
+                  sounds.stopMusic();
+                  setPreviewTrackId(null);
+                }
                 sounds.playSoftClick();
                 setEditorTab('preview');
               }}
@@ -1275,6 +1295,110 @@ export default function HomePage() {
                           {anim.desc}
                         </p>
                       </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 7. Background Music & Atmosphere Selector */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block font-serif text-xs text-[#7D7060]">
+                    Pilihan Musik Latar Surat
+                  </label>
+                  <span className="font-handwriting text-xs text-[#8C7A6B]">
+                    Alunan melodi saat lembar surat terbuka
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  {MUSIC_TRACKS.map((track) => {
+                    const isSelected = musicMood === track.id;
+                    const isTrackPreviewing = previewTrackId === track.id;
+
+                    return (
+                      <div
+                        key={track.id}
+                        onClick={() => {
+                          sounds.playSoftClick();
+                          setMusicMood(track.id);
+                          if (previewTrackId && previewTrackId !== track.id) {
+                            sounds.stopMusic();
+                            setPreviewTrackId(null);
+                          }
+                        }}
+                        className={`p-3 rounded-xl border text-left transition-all cursor-pointer relative flex flex-col justify-between ${
+                          isSelected
+                            ? 'border-[#964332] bg-white ring-1 ring-[#964332] shadow-xs'
+                            : 'border-[#E5DACB] bg-[#F7F2E8] hover:bg-white'
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <div className="flex items-center gap-2">
+                              {track.id === 'clair-de-lune' && (
+                                <Disc size={16} className={isSelected ? 'text-[#964332]' : 'text-[#7D6E60]'} />
+                              )}
+                              {track.id === 'happy-birthday' && (
+                                <Cake size={16} className={isSelected ? 'text-[#BA6E52]' : 'text-[#7D6E60]'} />
+                              )}
+                              {track.id === 'none' && (
+                                <VolumeX size={16} className={isSelected ? 'text-[#8C7D6D]' : 'text-[#7D6E60]'} />
+                              )}
+                              <p className="font-serif text-xs text-[#2B231D] font-medium">
+                                {track.name}
+                              </p>
+                            </div>
+
+                            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-[#FAF4EB] border border-[#E8DEC9] text-[#7A6A5A]">
+                              {track.durationLabel}
+                            </span>
+                          </div>
+
+                          <p className="font-handwriting text-[11px] text-[#8C7D6D] line-clamp-2">
+                            {track.description}
+                          </p>
+                        </div>
+
+                        {track.id !== 'none' && (
+                          <div className="mt-3 pt-2 border-t border-[#ECE3D5]/80 flex items-center justify-between">
+                            <span className="text-[10px] font-serif italic text-[#8C7E70]">
+                              {track.artist || 'Instrumen'}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                sounds.playSoftClick();
+                                if (isTrackPreviewing) {
+                                  sounds.stopMusic();
+                                  setPreviewTrackId(null);
+                                } else {
+                                  sounds.playMusic(track.id);
+                                  setPreviewTrackId(track.id);
+                                }
+                              }}
+                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-serif italic transition-all cursor-pointer ${
+                                isTrackPreviewing
+                                  ? 'bg-[#2B2520] text-white shadow-xs'
+                                  : 'bg-white text-[#5C4F42] border border-[#DFCDBA] hover:bg-[#FAF5EC]'
+                              }`}
+                              title={`Dengarkan cuplikan ${track.name}`}
+                            >
+                              {isTrackPreviewing ? (
+                                <>
+                                  <Volume2 size={11} className="text-[#EADFA8] animate-pulse" />
+                                  <span>Berhenti</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Play size={11} />
+                                  <span>Dengarkan</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     );
                   })}
                 </div>
